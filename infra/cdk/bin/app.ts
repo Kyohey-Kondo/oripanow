@@ -3,16 +3,20 @@ import * as cdk from 'aws-cdk-lib';
 import { BatchStack } from '../lib/batch-stack';
 import { WebStack } from '../lib/web-stack';
 
+const deployEnv = process.env.DEPLOY_ENV ?? 'dev';
+
 const app = new cdk.App();
 
-new BatchStack(app, 'batch-stack', {
+new BatchStack(app, `${deployEnv}-batch-stack`, {
+  deployEnv,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION ?? 'ap-northeast-1',
   },
 });
 
-new WebStack(app, 'web-stack', {
+new WebStack(app, `${deployEnv}-web-stack`, {
+  deployEnv,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION ?? 'ap-northeast-1',

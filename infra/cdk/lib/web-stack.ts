@@ -6,9 +6,15 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
+interface WebStackProps extends cdk.StackProps {
+  deployEnv: string;
+}
+
 export class WebStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: WebStackProps) {
     super(scope, id, props);
+
+    const { deployEnv } = props;
 
     // S3: 静的アセット
     const assetBucket = new s3.Bucket(this, 'AssetBucket', {
@@ -19,14 +25,14 @@ export class WebStack extends cdk.Stack {
 
     // CloudWatch Log Group
     const logGroup = new logs.LogGroup(this, 'NextjsLogGroup', {
-      logGroupName: '/aws/lambda/oripa-now-nextjs',
+      logGroupName: `/aws/lambda/${deployEnv}-oripa-now-nextjs`,
       retention: logs.RetentionDays.ONE_WEEK,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     // Lambda: Next.js SSR スタブ（インライン実装）
     const nextjsFn = new lambda.Function(this, 'NextjsFunction', {
-      functionName: 'oripa-now-nextjs',
+      functionName: `${deployEnv}-oripa-now-nextjs`,
       runtime: lambda.Runtime.NODEJS_22_X,
       handler: 'index.handler',
       code: lambda.Code.fromInline(

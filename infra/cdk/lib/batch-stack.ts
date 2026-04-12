@@ -6,13 +6,19 @@ import * as logs from 'aws-cdk-lib/aws-logs';
 import * as path from 'path';
 import { Construct } from 'constructs';
 
+interface BatchStackProps extends cdk.StackProps {
+  deployEnv: string;
+}
+
 export class BatchStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: BatchStackProps) {
     super(scope, id, props);
 
-    // DynamoDB: Single Table "oripa-now" with GSI × 3
+    const { deployEnv } = props;
+
+    // DynamoDB: Single Table with GSI × 3
     const table = new dynamodb.Table(this, 'OripaTable', {
-      tableName: 'oripa-now',
+      tableName: `${deployEnv}-oripa-now`,
       partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
       sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
@@ -45,14 +51,14 @@ export class BatchStack extends cdk.Stack {
 
     // CloudWatch Log Group
     const logGroup = new logs.LogGroup(this, 'BatchLogGroup', {
-      logGroupName: '/aws/lambda/oripa-now-batch',
+      logGroupName: `/aws/lambda/${deployEnv}-oripa-now-batch`,
       retention: logs.RetentionDays.ONE_WEEK,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
     // Lambda: バッチ処理（現フェーズはヘルスチェック + DynamoDB 接続確認のスタブ）
     const batchFn = new lambdaNodejs.NodejsFunction(this, 'BatchFunction', {
-      functionName: 'oripa-now-batch',
+      functionName: `${deployEnv}-oripa-now-batch`,
       entry: path.join(__dirname, '../../../apps/batch/src/index.ts'),
       handler: 'handler',
       runtime: lambda.Runtime.NODEJS_22_X,
