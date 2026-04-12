@@ -1,0 +1,22 @@
+{
+  "name": "@oripa-now/infra",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy"
+  },
+  "dependencies": {
+    "@oripa-now/types": "workspace:*",
+    "aws-cdk-lib": "^2.200.1",
+    "constructs": "^10.4.2"
+  },
+  "devDependencies": {
+    "@oripa-now/config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "aws-cdk": "^2.200.1",
+    "typescript": "^5.8.3"
+  }
+}

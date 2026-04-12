@@ -1,0 +1,21 @@
+{
+  "name": "@oripa-now/db",
+  "version": "0.0.1",
+  "private": true,
+  "main": "schema/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "@oripa-now/types": "workspace:*",
+    "drizzle-orm": "^0.43.1"
+  },
+  "devDependencies": {
+    "@oripa-now/config": "workspace:*",
+    "drizzle-kit": "^0.31.0",
+    "typescript": "^5.8.3"
+  }
+}
