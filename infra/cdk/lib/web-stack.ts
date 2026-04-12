@@ -4,6 +4,7 @@ import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as path from 'path';
 import { Construct } from 'constructs';
 
 interface WebStackProps extends cdk.StackProps {
@@ -16,7 +17,7 @@ export class WebStack extends cdk.Stack {
 
     const { deployEnv } = props;
 
-    // S3: 静的アセット
+    // S3: static assets
     const assetBucket = new s3.Bucket(this, 'AssetBucket', {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
@@ -30,16 +31,30 @@ export class WebStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    // Lambda: Next.js SSR スタブ（インライン実装）
+    // Lambda Web Adapter layer (translates Lambda events → HTTP for Next.js server)
+    const lwaLayer = lambda.LayerVersion.fromLayerVersionArn(
+      this,
+      'LwaLayer',
+      'arn:aws:lambda:ap-northeast-1:753240598075:layer:LambdaAdapterLayerX86:27',
+    );
+
+    // Lambda: Next.js SSR via Lambda Web Adapter + standalone build
     const nextjsFn = new lambda.Function(this, 'NextjsFunction', {
       functionName: `${deployEnv}-oripa-now-nextjs`,
       runtime: lambda.Runtime.NODEJS_22_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(
-        'exports.handler = async () => ({ statusCode: 200, body: JSON.stringify({ status: "ok" }) });',
+      handler: 'run.sh',
+      code: lambda.Code.fromAsset(
+        path.join(__dirname, '../../../apps/web/.next/standalone'),
       ),
       timeout: cdk.Duration.seconds(30),
+      memorySize: 512,
       logGroup,
+      layers: [lwaLayer],
+      environment: {
+        AWS_LAMBDA_EXEC_WRAPPER: '/opt/bootstrap',
+        AWS_LWA_PORT: '3000',
+        PORT: '3000',
+      },
     });
 
     const fnUrl = nextjsFn.addFunctionUrl({

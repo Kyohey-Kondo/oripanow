@@ -8,6 +8,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-12
 - Lambda Node.js 22.x（VPC なし・IAM 認証）
 - TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x ランタイム + AWS CDK v2, `aws-cdk-lib/aws-lambda-nodejs`（esbuild）, `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb` (002-infra-smoke-test)
 - DynamoDB（Single Table `oripa-now`、GSI × 3、オンデマンドキャパシティ） (002-infra-smoke-test)
+- TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x + Next.js 15 (App Router, `output: "standalone"`), `serverless-http`, `@types/serverless-http` (003-ssr-sample)
+- なし（スタブデータはハードコード） (003-ssr-sample)
 
 ## Project Structure
 
@@ -43,7 +45,11 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 - GSI3（未処理 sparse）:     GSI3PK=`UNPROCESSED`     GSI3SK=`FETCHED#<fetchedAt>`
 
 <!-- MANUAL ADDITIONS START -->
+## Spec Writing Rules
+
+- All content under `specs/` must be written in **English** (spec.md, plan.md, research.md, data-model.md, quickstart.md, tasks.md, contracts/, checklists/)
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 003-ssr-sample: Added TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x + Next.js 15 (App Router, `output: "standalone"`), `serverless-http`, `@types/serverless-http`
 - 002-infra-smoke-test: Added TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x ランタイム + AWS CDK v2, `aws-cdk-lib/aws-lambda-nodejs`（esbuild）, `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb`
