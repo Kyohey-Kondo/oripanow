@@ -8,6 +8,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.797.0",
+    "@aws-sdk/lib-dynamodb": "^3.797.0",
     "@oripa-now/db": "workspace:*",
     "@oripa-now/types": "workspace:*"
   },

@@ -10,7 +10,7 @@ pnpm workspaces + Turborepo を使ったモノリポ構成のディレクトリ�
 ## Technical Context
 
 **Language/Version**: TypeScript 5.x / Node.js 22 LTS
-**Primary Dependencies**: pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, Drizzle ORM
+**Primary Dependencies**: pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, AWS SDK v3 (DynamoDB DocumentClient)
 **Storage**: N/A（このフィーチャーではスキーマスタブのみ）
 **Testing**: N/A（このフィーチャーでは設定ファイルのみ）
 **Target Platform**: macOS / Linux（開発環境）; AWS Lambda + CloudFront（本番は別フィーチャー）
@@ -61,8 +61,6 @@ oripa-now/
 ├── packages/
 │   ├── db/
 │   │   ├── schema/index.ts
-│   │   ├── migrations/
-│   │   ├── drizzle.config.ts
 │   │   ├── tsconfig.json
 │   │   └── package.json
 │   ├── types/
@@ -79,7 +77,7 @@ oripa-now/
 │       ├── bin/app.ts
 │       ├── lib/
 │       │   ├── web-stack.ts    # CloudFront + Lambda (Next.js)
-│       │   └── batch-stack.ts  # EventBridge + Lambda + Aurora Serverless v2
+│       │   └── batch-stack.ts  # EventBridge + Lambda + DynamoDB
 │       ├── cdk.json
 │       ├── tsconfig.json
 │       └── package.json

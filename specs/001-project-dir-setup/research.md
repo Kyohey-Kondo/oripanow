@@ -5,6 +5,18 @@
 
 ## Decision Log
 
+### データベース
+
+- **Decision**: DynamoDB（Single Table Design）
+- **Rationale**: VPC 不要・IAM 認証ネイティブ・サーバーレス。Lambda から直接接続でき、NAT Gateway・Secrets Manager が不要。アプリのアクセスパターンが固定的（GSI 3 本で全クエリをカバー）なため RDB の柔軟性は不要と判断。
+- **Alternatives considered**: Aurora Serverless v2（VPC 必須・複雑・高コスト）
+
+### DB クライアント
+
+- **Decision**: AWS SDK v3 `@aws-sdk/lib-dynamodb`（DocumentClient）
+- **Rationale**: Drizzle ORM は DynamoDB 非対応。SDK v3 は tree-shaking 対応で Lambda のコールドスタートに有利。
+- **Alternatives considered**: ElectroDB（ORM ライク、学習コストあり）
+
 ### パッケージマネージャー
 
 - **Decision**: pnpm workspaces

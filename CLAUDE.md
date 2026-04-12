@@ -3,28 +3,47 @@
 Auto-generated from all feature plans. Last updated: 2026-04-12
 
 ## Active Technologies
-
-- TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, Drizzle ORM (001-project-dir-setup)
+- TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, AWS SDK v3 (DynamoDB DocumentClient)
+- DynamoDB（Single Table Design、GSI × 3、オンデマンドキャパシティ）
+- Lambda Node.js 22.x（VPC なし・IAM 認証）
+- TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x ランタイム + AWS CDK v2, `aws-cdk-lib/aws-lambda-nodejs`（esbuild）, `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb` (002-infra-smoke-test)
+- DynamoDB（Single Table `oripa-now`、GSI × 3、オンデマンドキャパシティ） (002-infra-smoke-test)
 
 ## Project Structure
 
 ```text
-backend/
-frontend/
-tests/
+apps/web/        # Next.js 15 (App Router, SSR+ISR)
+apps/batch/      # Lambda バッチ（ツイート取得・AI解析・DynamoDB保存）
+packages/db/     # DynamoDB テーブル定義・Key ヘルパー・型（AWS SDK v3）
+packages/types/  # 共有型定義
+packages/config/ # TSConfig・ESLint 共通設定
+infra/cdk/       # AWS CDK v2（batch-stack / web-stack）
 ```
 
 ## Commands
 
-npm test && npm run lint
+```bash
+pnpm build      # turbo build（全ワークスペース）
+pnpm typecheck  # turbo typecheck
+pnpm lint       # turbo lint
+pnpm --filter @oripa-now/web dev  # フロントエンド開発サーバー
+```
 
 ## Code Style
 
-TypeScript 5.x / Node.js 22 LTS: Follow standard conventions
+TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワークスペースが継承。
 
-## Recent Changes
+## DynamoDB Key Design
 
-- 001-project-dir-setup: Added TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, Drizzle ORM
+- Store:     PK=`STORE#<id>`       SK=`STORE#<id>`
+- OripaPost: PK=`POST#<id>`        SK=`POST#<id>`
+- Tweet:     PK=`STORE#<store_id>` SK=`TWEET#<tweetedAt>#<tweetId>`
+- GSI1（エリア+ステータス）: GSI1PK=`<area>#<status>` GSI1SK=`<saleAtDate>#<createdAt>`
+- GSI2（店舗別）:            GSI2PK=`STORE#<storeId>` GSI2SK=`CREATED#<createdAt>`
+- GSI3（未処理 sparse）:     GSI3PK=`UNPROCESSED`     GSI3SK=`FETCHED#<fetchedAt>`
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
+
+## Recent Changes
+- 002-infra-smoke-test: Added TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x ランタイム + AWS CDK v2, `aws-cdk-lib/aws-lambda-nodejs`（esbuild）, `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb`

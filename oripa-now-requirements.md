@@ -111,8 +111,8 @@ EventBridge Scheduler（毎朝 AM 6:00 JST）
 | フロントエンド | Next.js (App Router) | SSR + ISR |
 | ホスティング | CloudFront + Lambda (OpenNext) | AWS 完結 |
 | バッチ実行 | EventBridge Scheduler + Lambda | 1日1回 cron |
-| データベース | Aurora Serverless v2 (PostgreSQL) | RDB 採用（柔軟なクエリ対応） |
-| ORM | Drizzle ORM | TypeScript ファースト |
+| データベース | DynamoDB | サーバーレス・VPC 不要・IAM 認証 |
+| DB クライアント | AWS SDK v3 (DynamoDB DocumentClient) | TypeScript ファースト |
 | IaC | AWS CDK | TypeScript で定義 |
 | AI 解析 | Claude API | ツイート本文の構造化抽出 |
 | Twitter 取得 | Twitter API v2 (Search Recent) | Basic プラン |
@@ -135,9 +135,8 @@ oripa-now/
 │           └── save.ts    # DB 保存
 │
 ├── packages/
-│   ├── db/                # Drizzle ORM スキーマ・マイグレーション
-│   │   ├── schema/
-│   │   └── migrations/
+│   ├── db/                # DynamoDB テーブル定義・クライアント
+│   │   └── schema/
 │   ├── types/             # 共有型定義
 │   └── config/            # ESLint・TSConfig 共通設定
 │
@@ -146,8 +145,7 @@ oripa-now/
 │       ├── bin/app.ts     # CDK エントリーポイント
 │       └── lib/
 │           ├── web-stack.ts    # CloudFront + Lambda
-│           ├── batch-stack.ts  # EventBridge + Lambda
-│           └── db-stack.ts     # Aurora Serverless v2
+│           └── batch-stack.ts  # EventBridge + Lambda + DynamoDB
 │
 ├── package.json           # pnpm workspaces
 ├── turbo.json             # Turborepo
@@ -156,80 +154,59 @@ oripa-now/
 
 ---
 
-## 7. データベーススキーマ
+## 7. データベース設計（DynamoDB）
 
-### 7.1 テーブル一覧
+### 7.1 テーブル構成
 
-#### `stores`（店舗マスタ）
+Single Table Design。テーブル名: `oripa-now`
 
-| カラム | 型 | 制約 | 説明 |
-|--------|-----|------|------|
-| id | uuid | PK | |
-| twitter_username | text | NOT NULL, UNIQUE | Twitter アカウント名 |
-| name | text | NOT NULL | 店舗名 |
-| area | text | NOT NULL | `tokyo` \| `omiya` |
-| address | text | | 住所 |
-| lat | real | | 緯度 |
-| lng | real | | 経度 |
-| is_active | boolean | NOT NULL, DEFAULT true | 監視対象フラグ |
-| created_at | timestamp | NOT NULL | |
-| updated_at | timestamp | NOT NULL | |
+#### Primary Key
 
-#### `tweets`（取得ツイート生データ）
+| 属性 | 役割 |
+|---|---|
+| PK (Partition Key) | エンティティ識別子 |
+| SK (Sort Key) | エンティティ識別子 or ソート用複合値 |
 
-| カラム | 型 | 制約 | 説明 |
-|--------|-----|------|------|
-| id | uuid | PK | |
-| store_id | uuid | FK → stores.id | |
-| tweet_id | text | NOT NULL, UNIQUE | Twitter の ID（重複排除キー） |
-| content | text | NOT NULL | ツイート本文 |
-| tweeted_at | timestamp | NOT NULL | ツイート日時 |
-| is_processed | boolean | NOT NULL, DEFAULT false | AI 解析済みフラグ |
-| fetched_at | timestamp | NOT NULL | 取得日時 |
+#### アイテム種別
 
-#### `oripa_posts`（AI 解析済みオリパ情報）
+**Store（店舗マスタ）**
 
-| カラム | 型 | 制約 | 説明 |
-|--------|-----|------|------|
-| id | uuid | PK | |
-| store_id | uuid | FK → stores.id | |
-| tweet_id | uuid | FK → tweets.id | |
-| status | text | NOT NULL | `on_sale` \| `sold_out` \| `upcoming` |
-| price | integer | NULL 許容 | 円（例: 500）。取得不可の場合 NULL |
-| stock_count | integer | NULL 許容 | 口数（例: 20）。取得不可の場合 NULL |
-| sale_at | timestamp | NULL 許容 | 発売日時。不明な場合 NULL |
-| raw_text | text | NOT NULL | 解析元ツイート本文（検証用） |
-| created_at | timestamp | NOT NULL | |
-| updated_at | timestamp | NOT NULL | |
+| PK | SK | 主な属性 |
+|---|---|---|
+| `STORE#<id>` | `STORE#<id>` | twitter_username, name, area, address, lat, lng, is_active |
 
-#### インデックス
+**OripaPost（AI解析済みオリパ）**
 
-```sql
-CREATE INDEX oripa_posts_store_id_idx ON oripa_posts (store_id);
-CREATE INDEX oripa_posts_status_idx   ON oripa_posts (status);
-CREATE INDEX oripa_posts_sale_at_idx  ON oripa_posts (sale_at);
+| PK | SK | 主な属性 |
+|---|---|---|
+| `POST#<id>` | `POST#<id>` | store_id, status, price, stock_count, sale_at, raw_text, tweet_id, created_at |
+| | | ＋ 非正規化: store_name, store_address, lat, lng |
+
+**Tweet（ツイート生データ）**
+
+| PK | SK | 主な属性 |
+|---|---|---|
+| `STORE#<store_id>` | `TWEET#<tweeted_at>#<tweet_id>` | tweet_id, content, is_processed, fetched_at |
+
+### 7.2 GSI（Global Secondary Index）
+
+| GSI | GSI PK | GSI SK | 用途 |
+|---|---|---|---|
+| GSI1 | `<area>#<status>` | `<sale_at_date>#<created_at>` | トップ・エリア別ページ |
+| GSI2 | `STORE#<store_id>` | `CREATED#<created_at>` | 店舗詳細ページ |
+| GSI3 | `UNPROCESSED`（sparse） | `FETCHED#<fetched_at>` | バッチ未処理ツイート取得 |
+
+### 7.3 主要クエリパターン
+
 ```
+# エリア別・在庫あり・今日のオリパ一覧
+GSI1: PK="tokyo#on_sale", SK begins_with "2026-04-12", 降順
 
-### 7.2 主要クエリパターン
+# 未処理ツイートの取得（バッチ用）
+GSI3: PK="UNPROCESSED"
 
-```sql
--- エリア別・在庫あり・今日のオリパ一覧
-SELECT o.*, s.name, s.address, s.lat, s.lng
-FROM oripa_posts o
-INNER JOIN stores s ON o.store_id = s.id
-WHERE s.area = 'tokyo'
-  AND o.status = 'on_sale'
-  AND DATE(o.sale_at) = CURRENT_DATE
-ORDER BY o.created_at DESC;
-
--- 未処理ツイートの取得（バッチ用）
-SELECT * FROM tweets WHERE is_processed = false;
-
--- 店舗詳細ページ用（最新5件）
-SELECT * FROM oripa_posts
-WHERE store_id = $1
-ORDER BY created_at DESC
-LIMIT 5;
+# 店舗詳細ページ用（最新5件）
+GSI2: PK="STORE#<id>", 降順 Limit 5
 ```
 
 ---
@@ -254,11 +231,11 @@ LIMIT 5;
 |----------|--------|----------|
 | Twitter API | Basic | $100 |
 | Claude API | 従量課金 | ~$5（店舗20件×30ツイート程度） |
-| Aurora Serverless v2 | 最小構成 | ~$15 |
+| DynamoDB | オンデマンド | ~$1 |
 | CloudFront + Lambda | 無料枠内 | ~$0 |
 | EventBridge + Lambda | 無料枠内 | ~$0 |
 | Google Maps API | 無料枠内（$200）| ~$0 |
-| **合計** | | **~$120/月** |
+| **合計** | | **~$106/月** |
 
 > Twitter API が最大コスト。初期フェーズは Free プランで監視対象を絞り（月1,500リクエスト）、店舗数が増えたタイミングで Basic へ移行する段階的アプローチも検討。
 

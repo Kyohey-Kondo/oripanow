@@ -8,7 +8,7 @@
 |---|---|---|
 | `apps/web` | `@oripa-now/web` | Next.js フロントエンド（ユーザー向け Web UI） |
 | `apps/batch` | `@oripa-now/batch` | Lambda バッチ処理（ツイート取得・AI 解析） |
-| `packages/db` | `@oripa-now/db` | Drizzle ORM スキーマ・マイグレーション |
+| `packages/db` | `@oripa-now/db` | DynamoDB テーブル定義・クライアント（AWS SDK v3） |
 | `packages/types` | `@oripa-now/types` | アプリ間共有型定義 |
 | `packages/config` | `@oripa-now/config` | ESLint・TSConfig 共通設定 |
 | `infra/cdk` | `@oripa-now/infra` | AWS CDK インフラ定義 |
@@ -46,6 +46,6 @@ pnpm --filter @oripa-now/batch build
 
 - **フロントエンド**: Next.js 15 (App Router)
 - **バッチ**: Node.js (AWS Lambda)
-- **データベース**: Aurora Serverless v2 (PostgreSQL) + Drizzle ORM
+- **データベース**: DynamoDB（Single Table Design、AWS SDK v3）
 - **インフラ**: AWS CDK v2
 - **パッケージ管理**: pnpm workspaces + Turborepo

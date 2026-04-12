@@ -35,7 +35,7 @@ infra/cdk
 |---|---|---|
 | `@oripa-now/web` | `apps/web` | Next.js フロントエンド |
 | `@oripa-now/batch` | `apps/batch` | Lambda バッチ処理 |
-| `@oripa-now/db` | `packages/db` | Drizzle ORM スキーマ・マイグレーション |
+| `@oripa-now/db` | `packages/db` | DynamoDB テーブル定義・クライアント |
 | `@oripa-now/types` | `packages/types` | 共有型定義 |
 | `@oripa-now/config` | `packages/config` | ESLint・TSConfig 共通設定 |
 | `@oripa-now/infra` | `infra/cdk` | AWS CDK インフラ定義 |
@@ -66,9 +66,7 @@ oripa-now/
 ├── packages/
 │   ├── db/
 │   │   ├── schema/
-│   │   │   └── index.ts            # スタブ
-│   │   ├── migrations/
-│   │   ├── drizzle.config.ts
+│   │   │   └── index.ts            # テーブル定義・Key ヘルパー・型
 │   │   ├── tsconfig.json
 │   │   └── package.json
 │   ├── types/
@@ -88,7 +86,7 @@ oripa-now/
 │       │   └── app.ts              # CDK エントリーポイント（スタブ）
 │       ├── lib/
 │       │   ├── web-stack.ts        # CloudFront + Lambda (Next.js)
-│       │   └── batch-stack.ts      # EventBridge + Lambda + Aurora Serverless v2
+│       │   └── batch-stack.ts      # EventBridge + Lambda + DynamoDB
 │       ├── cdk.json
 │       ├── tsconfig.json
 │       └── package.json
