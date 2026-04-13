@@ -54,8 +54,7 @@ export type OripaPostItem = {
 };
 
 export type TweetItem = {
-  id: string;               // ULID — PK of ${env}-tweets (internal ID)
-  tweetId: string;          // Twitter's tweet ID (external)
+  tweetId: string;          // Twitter's tweet ID — PK of ${env}-tweets
   storeId: string;          // ULID — FK to stores
   content: string;
   tweetedAt: string;        // ISO 8601

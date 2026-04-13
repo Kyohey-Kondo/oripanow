@@ -40,6 +40,7 @@ export async function fetchTweetsForStore(
     params.since_id = sinceId;
   }
 
+  console.log(JSON.stringify({ level: 'DEBUG', query, params }));
   const paginator = await client.v2.search(query, params);
   return paginator.data.data ?? [];
 }

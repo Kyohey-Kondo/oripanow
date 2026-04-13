@@ -80,16 +80,16 @@ export const handler = async (_event: unknown): Promise<AnalyzeRunResult> => {
 
       if (result.status === 'not_oripa') {
         skipped++;
-        await markTweetProcessed(docClient, tweet.id);
+        await markTweetProcessed(docClient, tweet.tweetId);
       } else {
         await saveOripaPost(docClient, result, tweet, store);
-        await markTweetProcessed(docClient, tweet.id);
+        await markTweetProcessed(docClient, tweet.tweetId);
         postsCreated++;
       }
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err);
       errors.push({ tweetId: tweet.tweetId, error });
-      console.error(JSON.stringify({ level: 'ERROR', tweetId: tweet.tweetId, id: tweet.id, error }));
+      console.error(JSON.stringify({ level: 'ERROR', tweetId: tweet.tweetId, error }));
     }
   }
 

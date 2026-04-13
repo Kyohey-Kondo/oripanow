@@ -1,13 +1,12 @@
 import { DynamoDBDocumentClient, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
-import { ulid } from 'ulid';
 import { type TweetV2 } from 'twitter-api-v2';
 import { TABLE_NAMES, type OripaPostItem, type StoreItem, type TweetItem } from '@oripa-now/db';
 import type { AnalysisResult } from './parse';
 
 /**
  * Write new tweet records to DynamoDB.
- * Each tweet becomes a TweetItem with isProcessed=false and processStatus="UNPROCESSED"
- * so it appears in the GSI2 unprocessed queue for downstream AI analysis.
+ * tweetId (Twitter's ID) is the PK, so duplicate tweets are silently skipped.
+ * Each tweet is saved with processStatus="UNPROCESSED" to appear in the GSI2 queue.
  *
  * Returns the number of records written.
  */
@@ -21,7 +20,6 @@ export async function saveTweets(
 
   for (const tweet of tweets) {
     const item: TweetItem = {
-      id: ulid(),
       tweetId: tweet.id,
       storeId: store.storeId,
       content: tweet.text,
@@ -31,19 +29,22 @@ export async function saveTweets(
       processStatus: 'UNPROCESSED',
     };
 
-    await docClient.send(
-      new PutCommand({
-        TableName: TABLE_NAMES.tweets,
-        Item: item,
-        // Idempotency: skip if a record with the same internal tweetId already exists.
-        // We check tweetId via a filter rather than a condition on PK (which is ULID).
-        // Since since_id prevents the API from returning already-fetched tweets on
-        // subsequent runs, this guard only fires on the very first run or after a
-        // lastFetchedTweetId reset.
-        ConditionExpression: 'attribute_not_exists(id)',
-      }),
-    );
-    written++;
+    try {
+      await docClient.send(
+        new PutCommand({
+          TableName: TABLE_NAMES.tweets,
+          Item: item,
+          ConditionExpression: 'attribute_not_exists(tweetId)',
+        }),
+      );
+      written++;
+    } catch (err: unknown) {
+      if ((err as { name?: string }).name === 'ConditionalCheckFailedException') {
+        // Already exists — skip silently
+        continue;
+      }
+      throw err;
+    }
   }
 
   return written;
@@ -62,7 +63,7 @@ export async function saveOripaPost(
   const saleAt = result.saleAt ?? now.slice(0, 10);
 
   const item: OripaPostItem = {
-    postId: ulid(),
+    postId: tweet.tweetId,
     storeId: store.storeId,
     tweetId: tweet.tweetId,
     status: result.status as OripaPostItem['status'],
@@ -77,9 +78,20 @@ export async function saveOripaPost(
     storeAddress: store.address,
   };
 
-  await docClient.send(
-    new PutCommand({ TableName: TABLE_NAMES.oripaPosts, Item: item }),
-  );
+  try {
+    await docClient.send(
+      new PutCommand({
+        TableName: TABLE_NAMES.oripaPosts,
+        Item: item,
+        ConditionExpression: 'attribute_not_exists(postId)',
+      }),
+    );
+  } catch (err: unknown) {
+    if ((err as { name?: string }).name === 'ConditionalCheckFailedException') {
+      return; // Already exists — idempotent skip
+    }
+    throw err;
+  }
 }
 
 /**
@@ -87,12 +99,12 @@ export async function saveOripaPost(
  */
 export async function markTweetProcessed(
   docClient: DynamoDBDocumentClient,
-  id: string,
+  tweetId: string,
 ): Promise<void> {
   await docClient.send(
     new UpdateCommand({
       TableName: TABLE_NAMES.tweets,
-      Key: { id },
+      Key: { tweetId },
       UpdateExpression: 'SET isProcessed = :true REMOVE processStatus',
       ExpressionAttributeValues: { ':true': true },
     }),

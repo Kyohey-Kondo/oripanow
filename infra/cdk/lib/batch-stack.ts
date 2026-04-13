@@ -60,7 +60,7 @@ export class BatchStack extends cdk.Stack {
     // GSI2: processStatus → fetchedAt   (sparse: unprocessed batch queue)
     const tweetsTable = new dynamodb.Table(this, 'TweetsTable', {
       tableName: `${deployEnv}-tweets`,
-      partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+      partitionKey: { name: 'tweetId', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });

@@ -275,20 +275,11 @@ const posts: OripaPostItem[] = [
 ];
 
 // ─── Tweet IDs (ULID) ─────────────────────────────────────────────────────────
-const tweetIds = {
-  tw1: ulid(),
-  tw2: ulid(),
-  tw3: ulid(),
-  tw4: ulid(),
-  tw5: ulid(),
-};
-
 // ─── Tweets ───────────────────────────────────────────────────────────────────
 
 const tweets: TweetItem[] = [
   // 未処理 × 3 → processStatus="UNPROCESSED" (GSI2 に存在)
   {
-    id: tweetIds.tw1,
     tweetId: "tw-001",
     storeId: storeIds.akihabara,
     content: "本日もオリパやります！3000円〜 #ポケカ #オリパ",
@@ -298,7 +289,6 @@ const tweets: TweetItem[] = [
     processStatus: "UNPROCESSED",
   },
   {
-    id: tweetIds.tw2,
     tweetId: "tw-002",
     storeId: storeIds.ikebukuro,
     content: "限定オリパ入荷！5000円チャレンジ！",
@@ -308,7 +298,6 @@ const tweets: TweetItem[] = [
     processStatus: "UNPROCESSED",
   },
   {
-    id: tweetIds.tw3,
     tweetId: "tw-003",
     storeId: storeIds.omiya1,
     content: "大宮店です。本日2000円オリパ100パック用意しました",
@@ -319,7 +308,6 @@ const tweets: TweetItem[] = [
   },
   // 処理済 × 2 → processStatus なし (sparse — GSI2 から見えない)
   {
-    id: tweetIds.tw4,
     tweetId: "tw-004",
     storeId: storeIds.akihabara,
     content: "昨日のオリパ情報です",
@@ -329,7 +317,6 @@ const tweets: TweetItem[] = [
     // processStatus は付与しない
   },
   {
-    id: tweetIds.tw5,
     tweetId: "tw-005",
     storeId: storeIds.omiya2,
     content: "カードパラダイス昨日分",
@@ -373,7 +360,7 @@ async function seed(): Promise<void> {
   for (const item of tweets) {
     await client.send(new PutCommand({ TableName: TWEETS_TABLE, Item: item }));
     const processed = item.isProcessed ? "処理済（GSI2なし）" : "未処理（GSI2あり）";
-    console.log(`  ✓ id=${item.id}  tweetId=${item.tweetId.padEnd(8)}  ${processed}`);
+    console.log(`  ✓ tweetId=${item.tweetId.padEnd(8)}  ${processed}`);
   }
 
   console.log(`
