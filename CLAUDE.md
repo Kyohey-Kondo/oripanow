@@ -11,6 +11,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-13
 - TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x + Next.js 15 (App Router, `output: "standalone"`), `serverless-http`, `@types/serverless-http` (003-ssr-sample)
 - なし（スタブデータはハードコード） (003-ssr-sample)
 - `twitter-api-v2` (Twitter API v2 client), `ulid`, EventBridge hourly schedule (005-twitter-fetch)
+- TypeScript 5.x / Node.js 22 LTS (Lambda `nodejs22.x`) + `@anthropic-ai/sdk` (Claude API), `@aws-sdk/lib-dynamodb`, `ulid` (006-ai-tweet-analysis)
+- DynamoDB — `tweets` (read+update), `stores` (read), `oripa-posts` (write) (006-ai-tweet-analysis)
 
 ## Project Structure
 
@@ -52,6 +54,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 006-ai-tweet-analysis: Added TypeScript 5.x / Node.js 22 LTS (Lambda `nodejs22.x`) + `@anthropic-ai/sdk` (Claude API), `@aws-sdk/lib-dynamodb`, `ulid`
 - 005-twitter-fetch: Added `twitter-api-v2`, `ulid` (in batch), EventBridge hourly schedule, SSM for Twitter Bearer token
 - 004-top-page-stores: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-- 003-ssr-sample: Added TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x + Next.js 15 (App Router, `output: "standalone"`), `serverless-http`, `@types/serverless-http`

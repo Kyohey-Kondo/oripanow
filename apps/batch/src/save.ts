@@ -1,7 +1,8 @@
 import { DynamoDBDocumentClient, PutCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { ulid } from 'ulid';
 import { type TweetV2 } from 'twitter-api-v2';
-import { TABLE_NAMES, type StoreItem, type TweetItem } from '@oripa-now/db';
+import { TABLE_NAMES, type OripaPostItem, type StoreItem, type TweetItem } from '@oripa-now/db';
+import type { AnalysisResult } from './parse';
 
 /**
  * Write new tweet records to DynamoDB.
@@ -46,6 +47,56 @@ export async function saveTweets(
   }
 
   return written;
+}
+
+/**
+ * Write an OripaPost record derived from AI analysis of a tweet.
+ */
+export async function saveOripaPost(
+  docClient: DynamoDBDocumentClient,
+  result: AnalysisResult,
+  tweet: TweetItem,
+  store: StoreItem,
+): Promise<void> {
+  const now = new Date().toISOString();
+  const saleAt = result.saleAt ?? now.slice(0, 10);
+
+  const item: OripaPostItem = {
+    postId: ulid(),
+    storeId: store.storeId,
+    tweetId: tweet.tweetId,
+    status: result.status as OripaPostItem['status'],
+    price: result.price,
+    stockCount: result.stockCount,
+    saleAt,
+    rawText: tweet.content,
+    createdAt: now,
+    updatedAt: now,
+    areaStatusDate: `${store.area}#${result.status}#${saleAt}`,
+    storeName: store.name,
+    storeAddress: store.address,
+  };
+
+  await docClient.send(
+    new PutCommand({ TableName: TABLE_NAMES.oripaPosts, Item: item }),
+  );
+}
+
+/**
+ * Mark a tweet as processed and remove it from the UNPROCESSED sparse index.
+ */
+export async function markTweetProcessed(
+  docClient: DynamoDBDocumentClient,
+  id: string,
+): Promise<void> {
+  await docClient.send(
+    new UpdateCommand({
+      TableName: TABLE_NAMES.tweets,
+      Key: { id },
+      UpdateExpression: 'SET isProcessed = :true REMOVE processStatus',
+      ExpressionAttributeValues: { ':true': true },
+    }),
+  );
 }
 
 /**

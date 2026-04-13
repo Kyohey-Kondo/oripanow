@@ -2,6 +2,7 @@ import * as cdk from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as events from 'aws-cdk-lib/aws-events';
 import * as eventsTargets from 'aws-cdk-lib/aws-events-targets';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
@@ -85,7 +86,7 @@ export class BatchStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    // ─── SSM: Twitter Bearer token ───────────────────────────────────────────
+    // ─── SSM: secrets ────────────────────────────────────────────────────────
     const twitterBearerToken = ssm.StringParameter.valueForStringParameter(
       this,
       `/oripa-now/${deployEnv}/TWITTER_BEARER_TOKEN`,
@@ -125,6 +126,54 @@ export class BatchStack extends cdk.Stack {
     storesTable.grantReadWriteData(batchFn);
     oripaPostsTable.grantReadWriteData(batchFn);
     tweetsTable.grantReadWriteData(batchFn);
+
+    // ─── Lambda: analyze ─────────────────────────────────────────────────────
+    const analyzeFn = new lambdaNodejs.NodejsFunction(this, 'AnalyzeFunction', {
+      functionName: `${deployEnv}-oripa-now-analyze`,
+      entry: path.join(__dirname, '../../../apps/batch/src/analyze.ts'),
+      handler: 'handler',
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: cdk.Duration.minutes(5),
+      environment: {
+        DEPLOY_ENV: deployEnv,
+        STORES_TABLE_NAME: storesTable.tableName,
+        ORIPA_POSTS_TABLE_NAME: oripaPostsTable.tableName,
+        TWEETS_TABLE_NAME: tweetsTable.tableName,
+        ANTHROPIC_MODEL: 'jp.anthropic.claude-haiku-4-5-20251001-v1:0',
+        ANALYZE_BATCH_SIZE: '50',
+      },
+      logGroup: new logs.LogGroup(this, 'AnalyzeLogGroup', {
+        logGroupName: `/aws/lambda/${deployEnv}-oripa-now-analyze`,
+        retention: logs.RetentionDays.ONE_WEEK,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+      }),
+      bundling: {
+        minify: true,
+        sourceMap: false,
+        externalModules: [],
+      },
+    });
+
+    storesTable.grantReadData(analyzeFn);
+    oripaPostsTable.grantReadWriteData(analyzeFn);
+    tweetsTable.grantReadWriteData(analyzeFn);
+
+    // Bedrock: IAM permission to invoke Claude models
+    analyzeFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['bedrock:InvokeModel'],
+        resources: [
+          'arn:aws:bedrock:*::foundation-model/anthropic.*',
+          `arn:aws:bedrock:*:${this.account}:inference-profile/*`,
+        ],
+      }),
+    );
+
+    new events.Rule(this, 'AnalyzeScheduleRule', {
+      ruleName: `${deployEnv}-oripa-now-analyze`,
+      schedule: events.Schedule.rate(cdk.Duration.hours(1)),
+      targets: [new eventsTargets.LambdaFunction(analyzeFn)],
+    });
 
     // ─── Outputs ─────────────────────────────────────────────────────────────
     new cdk.CfnOutput(this, 'BatchFunctionName', {
