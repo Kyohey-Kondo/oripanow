@@ -1,8 +1,11 @@
 import * as cdk from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
+import * as events from 'aws-cdk-lib/aws-events';
+import * as eventsTargets from 'aws-cdk-lib/aws-events-targets';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as lambdaNodejs from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as path from 'path';
 import { Construct } from 'constructs';
 
@@ -82,18 +85,27 @@ export class BatchStack extends cdk.Stack {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
+    // ─── SSM: Twitter Bearer token ───────────────────────────────────────────
+    const twitterBearerToken = ssm.StringParameter.valueForStringParameter(
+      this,
+      `/oripa-now/${deployEnv}/TWITTER_BEARER_TOKEN`,
+    );
+
     // ─── Lambda: batch processing ────────────────────────────────────────────
     const batchFn = new lambdaNodejs.NodejsFunction(this, 'BatchFunction', {
       functionName: `${deployEnv}-oripa-now-batch`,
       entry: path.join(__dirname, '../../../apps/batch/src/index.ts'),
       handler: 'handler',
       runtime: lambda.Runtime.NODEJS_22_X,
-      timeout: cdk.Duration.seconds(30),
+      timeout: cdk.Duration.minutes(5),
       environment: {
         DEPLOY_ENV: deployEnv,
         STORES_TABLE_NAME: storesTable.tableName,
         ORIPA_POSTS_TABLE_NAME: oripaPostsTable.tableName,
         TWEETS_TABLE_NAME: tweetsTable.tableName,
+        TWITTER_BEARER_TOKEN: twitterBearerToken,
+        TWEET_KEYWORDS: 'オリパ,おりぱ,oripa,ORIPA,オリジナルパック,mystery pack,mystery box,custom pack,blind pack,gacha pack',
+        GAME_KEYWORDS: 'ポケカ,ポケモンカード,ポケモン,Pokemon,Pokémon,PTCG,PKM',
       },
       logGroup,
       bundling: {
@@ -101,6 +113,13 @@ export class BatchStack extends cdk.Stack {
         sourceMap: false,
         externalModules: [],
       },
+    });
+
+    // ─── EventBridge: hourly schedule ────────────────────────────────────────
+    new events.Rule(this, 'BatchScheduleRule', {
+      ruleName: `${deployEnv}-oripa-now-batch-fetch`,
+      schedule: events.Schedule.rate(cdk.Duration.hours(1)),
+      targets: [new eventsTargets.LambdaFunction(batchFn)],
     });
 
     storesTable.grantReadWriteData(batchFn);

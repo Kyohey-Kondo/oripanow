@@ -32,6 +32,7 @@ export type StoreItem = {
   isActive: boolean;
   createdAt: string;        // ISO 8601
   updatedAt: string;        // ISO 8601
+  lastFetchedTweetId?: string; // Highest tweet ID seen on last successful fetch; used as since_id
 };
 
 export type OripaPostItem = {

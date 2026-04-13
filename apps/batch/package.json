@@ -11,7 +11,9 @@
     "@aws-sdk/client-dynamodb": "^3.797.0",
     "@aws-sdk/lib-dynamodb": "^3.797.0",
     "@oripa-now/db": "workspace:*",
-    "@oripa-now/types": "workspace:*"
+    "@oripa-now/types": "workspace:*",
+    "twitter-api-v2": "^1.29.0",
+    "ulid": "^3.0.2"
   },
   "devDependencies": {
     "@oripa-now/config": "workspace:*",
