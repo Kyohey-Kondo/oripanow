@@ -1,0 +1,26 @@
+{
+  "name": "@oripa-now/infra",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "synth": "PATH=\"/opt/homebrew/lib/node_modules/corepack/shims:$PATH\" cdk synth",
+    "diff": "PATH=\"/opt/homebrew/lib/node_modules/corepack/shims:$PATH\" cdk diff",
+    "deploy": "PATH=\"/opt/homebrew/lib/node_modules/corepack/shims:$PATH\" cdk deploy",
+    "destroy": "PATH=\"/opt/homebrew/lib/node_modules/corepack/shims:$PATH\" cdk destroy"
+  },
+  "dependencies": {
+    "@oripa-now/types": "workspace:*",
+    "aws-cdk-lib": "^2.200.1",
+    "constructs": "^10.4.2"
+  },
+  "devDependencies": {
+    "@oripa-now/config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "aws-cdk": "^2.200.1",
+    "esbuild": "^0.25.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

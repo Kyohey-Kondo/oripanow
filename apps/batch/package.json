@@ -1,0 +1,21 @@
+{
+  "name": "@oripa-now/batch",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.797.0",
+    "@aws-sdk/lib-dynamodb": "^3.797.0",
+    "@oripa-now/db": "workspace:*",
+    "@oripa-now/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@oripa-now/config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "typescript": "^5.8.3"
+  }
+}

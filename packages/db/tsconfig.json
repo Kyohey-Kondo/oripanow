@@ -1,0 +1,9 @@
+{
+  "extends": "@oripa-now/config/tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "."
+  },
+  "include": ["schema/**/*", "queries/**/*", "scripts/**/*", "drizzle.config.ts"],
+  "exclude": ["node_modules", "dist", "migrations"]
+}
