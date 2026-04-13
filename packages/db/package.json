@@ -5,15 +5,19 @@
   "main": "schema/index.ts",
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.800.0",
     "@aws-sdk/lib-dynamodb": "^3.800.0",
-    "@oripa-now/types": "workspace:*"
+    "@oripa-now/types": "workspace:*",
+    "ulid": "^3.0.2"
   },
   "devDependencies": {
     "@oripa-now/config": "workspace:*",
+    "@types/node": "^22.15.3",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.3"
   }
 }

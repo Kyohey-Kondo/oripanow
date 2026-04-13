@@ -1,97 +1,65 @@
-export const TABLE_NAME = process.env.DYNAMODB_TABLE_NAME ?? "oripa-now";
+// ─── Table name helpers ───────────────────────────────────────────────────────
+const DEPLOY_ENV = process.env.DEPLOY_ENV ?? "dev";
 
-// ─── Key prefixes ─────────────────────────────────────────────────────────────
-export const Keys = {
-  store: (id: string) => ({ PK: `STORE#${id}`, SK: `STORE#${id}` }),
-  post: (id: string) => ({ PK: `POST#${id}`, SK: `POST#${id}` }),
-  tweet: (storeId: string, tweetedAt: string, tweetId: string) => ({
-    PK: `STORE#${storeId}`,
-    SK: `TWEET#${tweetedAt}#${tweetId}`,
-  }),
+export const TABLE_NAMES = {
+  stores: process.env.STORES_TABLE_NAME ?? `${DEPLOY_ENV}-stores`,
+  oripaPosts: process.env.ORIPA_POSTS_TABLE_NAME ?? `${DEPLOY_ENV}-oripa-posts`,
+  tweets: process.env.TWEETS_TABLE_NAME ?? `${DEPLOY_ENV}-tweets`,
 } as const;
 
 // ─── GSI names ────────────────────────────────────────────────────────────────
 export const GSI = {
-  /** GSI1: area+status → oripa posts（トップ・エリア別ページ） */
-  byAreaStatus: "GSI1",
-  /** GSI2: store_id → oripa posts（店舗詳細ページ） */
-  byStore: "GSI2",
-  /** GSI3: sparse index for unprocessed tweets（バッチ用） */
-  unprocessed: "GSI3",
-} as const;
-
-// ─── GSI key helpers ─────────────────────────────────────────────────────────
-export const GsiKeys = {
-  /** GSI1: エリア別・ステータス別クエリ用 */
-  post: (area: string, status: string, saleAtDate: string, createdAt: string) => ({
-    GSI1PK: `${area}#${status}`,
-    GSI1SK: `${saleAtDate}#${createdAt}`,
-  }),
-  /** GSI2: 店舗別クエリ用 */
-  postByStore: (storeId: string, createdAt: string) => ({
-    GSI2PK: `STORE#${storeId}`,
-    GSI2SK: `CREATED#${createdAt}`,
-  }),
-  /** GSI3: 未処理ツイート用（sparse — 未処理時のみ付与） */
-  unprocessedTweet: (fetchedAt: string) => ({
-    GSI3PK: "UNPROCESSED",
-    GSI3SK: `FETCHED#${fetchedAt}`,
-  }),
+  /** GSI1 on oripa-posts: areaStatusDate → createdAt (top page, area page) */
+  oripaPostsByAreaStatusDate: "GSI1",
+  /** GSI2 on oripa-posts: storeId → createdAt (store detail page) */
+  oripaPostsByStore: "GSI2",
+  /** GSI1 on tweets: storeId → tweetedAt */
+  tweetsByStore: "GSI1",
+  /** GSI2 on tweets: processStatus → fetchedAt (sparse, batch queue) */
+  unprocessedTweets: "GSI2",
 } as const;
 
 // ─── Item types ───────────────────────────────────────────────────────────────
+
 export type StoreItem = {
-  PK: string;
-  SK: string;
-  type: "STORE";
-  id: string;
-  twitterUsername: string;
+  storeId: string;          // ULID — PK of ${env}-stores
   name: string;
+  twitterUsername: string;
   area: "tokyo" | "omiya";
   address?: string;
   lat?: number;
   lng?: number;
   isActive: boolean;
+  createdAt: string;        // ISO 8601
+  updatedAt: string;        // ISO 8601
 };
 
 export type OripaPostItem = {
-  PK: string;
-  SK: string;
-  type: "POST";
-  id: string;
-  storeId: string;
-  tweetId: string;
+  postId: string;           // ULID — PK of ${env}-oripa-posts
+  storeId: string;          // ULID — FK to stores
+  tweetId: string;          // Twitter tweet ID (external)
   status: "on_sale" | "sold_out" | "upcoming";
   price?: number;
   stockCount?: number;
-  saleAt?: string;
+  saleAt: string;           // YYYY-MM-DD
   rawText: string;
-  createdAt: string;
-  updatedAt: string;
-  // GSI1
-  GSI1PK: string;
-  GSI1SK: string;
-  // GSI2
-  GSI2PK: string;
-  GSI2SK: string;
-  // 非正規化（JOIN レス）
+  createdAt: string;        // ISO 8601
+  updatedAt: string;        // ISO 8601
+  // GSI1 attribute: "${area}#${status}#${saleAt}" e.g. "tokyo#on_sale#2026-04-13"
+  areaStatusDate: string;
+  // Denormalized from stores (avoids JOIN on read path)
   storeName: string;
   storeAddress?: string;
-  storeLat?: number;
-  storeLng?: number;
 };
 
 export type TweetItem = {
-  PK: string;
-  SK: string;
-  type: "TWEET";
-  tweetId: string;
-  storeId: string;
+  id: string;               // ULID — PK of ${env}-tweets (internal ID)
+  tweetId: string;          // Twitter's tweet ID (external)
+  storeId: string;          // ULID — FK to stores
   content: string;
-  tweetedAt: string;
+  tweetedAt: string;        // ISO 8601
   isProcessed: boolean;
-  fetchedAt: string;
-  // GSI3（sparse: 未処理時のみ存在）
-  GSI3PK?: string;
-  GSI3SK?: string;
+  fetchedAt: string;        // ISO 8601
+  // GSI2 sparse attribute — present only when not yet processed
+  processStatus?: "UNPROCESSED";
 };

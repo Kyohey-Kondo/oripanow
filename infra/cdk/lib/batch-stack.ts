@@ -16,47 +16,73 @@ export class BatchStack extends cdk.Stack {
 
     const { deployEnv } = props;
 
-    // DynamoDB: Single Table with GSI × 3
-    const table = new dynamodb.Table(this, 'OripaTable', {
-      tableName: `${deployEnv}-oripa-now`,
-      partitionKey: { name: 'PK', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'SK', type: dynamodb.AttributeType.STRING },
+    // ─── DynamoDB: stores ────────────────────────────────────────────────────
+    // PK: storeId (ULID)
+    const storesTable = new dynamodb.Table(this, 'StoresTable', {
+      tableName: `${deployEnv}-stores`,
+      partitionKey: { name: 'storeId', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    // GSI1: エリア別・ステータス別
-    table.addGlobalSecondaryIndex({
+    // ─── DynamoDB: oripa-posts ───────────────────────────────────────────────
+    // PK: postId (ULID)
+    // GSI1: areaStatusDate → createdAt  (top/area page: today's on-sale posts)
+    // GSI2: storeId → createdAt         (store detail page: posts by store)
+    const oripaPostsTable = new dynamodb.Table(this, 'OripaPostsTable', {
+      tableName: `${deployEnv}-oripa-posts`,
+      partitionKey: { name: 'postId', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    oripaPostsTable.addGlobalSecondaryIndex({
       indexName: 'GSI1',
-      partitionKey: { name: 'GSI1PK', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'GSI1SK', type: dynamodb.AttributeType.STRING },
+      partitionKey: { name: 'areaStatusDate', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'createdAt', type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
-    // GSI2: 店舗別
-    table.addGlobalSecondaryIndex({
+    oripaPostsTable.addGlobalSecondaryIndex({
       indexName: 'GSI2',
-      partitionKey: { name: 'GSI2PK', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'GSI2SK', type: dynamodb.AttributeType.STRING },
+      partitionKey: { name: 'storeId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'createdAt', type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
-    // GSI3: 未処理ツイート (sparse)
-    table.addGlobalSecondaryIndex({
-      indexName: 'GSI3',
-      partitionKey: { name: 'GSI3PK', type: dynamodb.AttributeType.STRING },
-      sortKey: { name: 'GSI3SK', type: dynamodb.AttributeType.STRING },
+    // ─── DynamoDB: tweets ────────────────────────────────────────────────────
+    // PK: id (ULID, internal)
+    // GSI1: storeId → tweetedAt         (tweets per store, chronological)
+    // GSI2: processStatus → fetchedAt   (sparse: unprocessed batch queue)
+    const tweetsTable = new dynamodb.Table(this, 'TweetsTable', {
+      tableName: `${deployEnv}-tweets`,
+      partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    tweetsTable.addGlobalSecondaryIndex({
+      indexName: 'GSI1',
+      partitionKey: { name: 'storeId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'tweetedAt', type: dynamodb.AttributeType.STRING },
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
-    // CloudWatch Log Group
+    tweetsTable.addGlobalSecondaryIndex({
+      indexName: 'GSI2',
+      partitionKey: { name: 'processStatus', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'fetchedAt', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // ─── CloudWatch Log Group ────────────────────────────────────────────────
     const logGroup = new logs.LogGroup(this, 'BatchLogGroup', {
       logGroupName: `/aws/lambda/${deployEnv}-oripa-now-batch`,
       retention: logs.RetentionDays.ONE_WEEK,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
-    // Lambda: バッチ処理（現フェーズはヘルスチェック + DynamoDB 接続確認のスタブ）
+    // ─── Lambda: batch processing ────────────────────────────────────────────
     const batchFn = new lambdaNodejs.NodejsFunction(this, 'BatchFunction', {
       functionName: `${deployEnv}-oripa-now-batch`,
       entry: path.join(__dirname, '../../../apps/batch/src/index.ts'),
@@ -64,7 +90,10 @@ export class BatchStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       timeout: cdk.Duration.seconds(30),
       environment: {
-        DYNAMODB_TABLE_NAME: table.tableName,
+        DEPLOY_ENV: deployEnv,
+        STORES_TABLE_NAME: storesTable.tableName,
+        ORIPA_POSTS_TABLE_NAME: oripaPostsTable.tableName,
+        TWEETS_TABLE_NAME: tweetsTable.tableName,
       },
       logGroup,
       bundling: {
@@ -74,18 +103,29 @@ export class BatchStack extends cdk.Stack {
       },
     });
 
-    // IAM: Lambda に DynamoDB 操作権限を付与
-    table.grantReadWriteData(batchFn);
+    storesTable.grantReadWriteData(batchFn);
+    oripaPostsTable.grantReadWriteData(batchFn);
+    tweetsTable.grantReadWriteData(batchFn);
 
-    // Outputs
+    // ─── Outputs ─────────────────────────────────────────────────────────────
     new cdk.CfnOutput(this, 'BatchFunctionName', {
       value: batchFn.functionName,
       description: 'Lambda function name for batch processing',
     });
 
-    new cdk.CfnOutput(this, 'DynamoDBTableName', {
-      value: table.tableName,
-      description: 'DynamoDB table name',
+    new cdk.CfnOutput(this, 'StoresTableName', {
+      value: storesTable.tableName,
+      description: 'DynamoDB stores table name',
+    });
+
+    new cdk.CfnOutput(this, 'OripaPostsTableName', {
+      value: oripaPostsTable.tableName,
+      description: 'DynamoDB oripa-posts table name',
+    });
+
+    new cdk.CfnOutput(this, 'TweetsTableName', {
+      value: tweetsTable.tableName,
+      description: 'DynamoDB tweets table name',
     });
   }
 }

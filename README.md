@@ -42,6 +42,66 @@ pnpm --filter @oripa-now/web dev
 pnpm --filter @oripa-now/batch build
 ```
 
+## デプロイ手順
+
+### 1. ビルド
+
+```bash
+# Next.js 本番ビルド（standalone 出力）
+pnpm --filter @oripa-now/web build
+```
+
+### 2. CDK デプロイ
+
+```bash
+# 両スタックをまとめてデプロイ
+pnpm --filter @oripa-now/infra run deploy
+
+# 特定スタックのみ
+pnpm --filter @oripa-now/infra run deploy -- dev-batch-stack
+pnpm --filter @oripa-now/infra run deploy -- dev-web-stack
+```
+
+デプロイ完了後、CloudFront の URL が出力されます：
+
+```
+Outputs:
+dev-web-stack.DistributionDomain = xxxx.cloudfront.net
+dev-batch-stack.DynamoDBTableName = dev-oripa-now
+```
+
+### 3. シードデータ投入
+
+DynamoDB 3テーブル（stores / oripa-posts / tweets）に今日付けのサンプルデータを投入します：
+
+```bash
+DEPLOY_ENV=dev pnpm --filter @oripa-now/db run seed
+```
+
+Store × 4、OripaPost × 9（当日 on_sale × 5、sold_out × 2、昨日 × 2）、Tweet × 5 が投入されます。
+
+### 4. 動作確認
+
+- ブラウザで `https://<DistributionDomain>` を開く
+- 店舗一覧が新着順に表示されることを確認
+
+### 5. リソース削除
+
+作業終了後はコストが発生しないよう AWS リソースを削除してください：
+
+```bash
+aws cloudformation delete-stack --stack-name dev-web-stack
+aws cloudformation delete-stack --stack-name dev-batch-stack
+
+# 削除完了を待機
+aws cloudformation wait stack-delete-complete --stack-name dev-web-stack
+aws cloudformation wait stack-delete-complete --stack-name dev-batch-stack
+```
+
+> **注意**: CDKToolkit（ブートストラップスタック）は削除不要です。次回デプロイ時に再利用されます。
+
+---
+
 ## 技術スタック
 
 - **フロントエンド**: Next.js 15 (App Router)

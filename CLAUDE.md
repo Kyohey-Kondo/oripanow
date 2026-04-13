@@ -1,6 +1,6 @@
 # oripanow Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-12
+Auto-generated from all feature plans. Last updated: 2026-04-13
 
 ## Active Technologies
 - TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, AWS SDK v3 (DynamoDB DocumentClient)
@@ -51,5 +51,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 004-top-page-stores: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 003-ssr-sample: Added TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x + Next.js 15 (App Router, `output: "standalone"`), `serverless-http`, `@types/serverless-http`
 - 002-infra-smoke-test: Added TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x ランタイム + AWS CDK v2, `aws-cdk-lib/aws-lambda-nodejs`（esbuild）, `@aws-sdk/client-dynamodb`, `@aws-sdk/lib-dynamodb`

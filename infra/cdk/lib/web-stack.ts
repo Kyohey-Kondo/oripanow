@@ -1,6 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
+import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
@@ -16,6 +17,9 @@ export class WebStack extends cdk.Stack {
     super(scope, id, props);
 
     const { deployEnv } = props;
+
+    // DynamoDB: batch-stack が作成した oripa-posts テーブル（読み取り専用）
+    const oripaPostsTableName = `${deployEnv}-oripa-posts`;
 
     // S3: static assets
     const assetBucket = new s3.Bucket(this, 'AssetBucket', {
@@ -54,8 +58,26 @@ export class WebStack extends cdk.Stack {
         AWS_LAMBDA_EXEC_WRAPPER: '/opt/bootstrap',
         AWS_LWA_PORT: '3000',
         PORT: '3000',
+        ORIPA_POSTS_TABLE_NAME: oripaPostsTableName,
       },
     });
+
+    // IAM: Lambda に DynamoDB 読み取り権限を明示付与（テーブル + 全 GSI）
+    const tableArn = cdk.Stack.of(this).formatArn({
+      service: 'dynamodb',
+      resource: 'table',
+      resourceName: oripaPostsTableName,
+    });
+    nextjsFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: [
+        'dynamodb:GetItem',
+        'dynamodb:BatchGetItem',
+        'dynamodb:Scan',
+        'dynamodb:Query',
+        'dynamodb:DescribeTable',
+      ],
+      resources: [tableArn, `${tableArn}/index/*`],
+    }));
 
     const fnUrl = nextjsFn.addFunctionUrl({
       authType: lambda.FunctionUrlAuthType.NONE,

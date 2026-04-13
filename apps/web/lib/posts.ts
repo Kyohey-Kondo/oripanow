@@ -1,0 +1,80 @@
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import {
+  getTodayJST,
+  queryOnSalePostsByDate,
+  TABLE_NAME,
+} from "@oripa-now/db/queries/oripa-posts";
+import type { OripaPostItem } from "@oripa-now/db";
+import type { OripaPostSummary } from "@oripa-now/types";
+
+const AREAS = ["tokyo", "omiya"] as const;
+const MAX_RESULTS = 50;
+
+// ─── Pure functions ───────────────────────────────────────────────────────────
+
+/** Sort posts by createdAt descending (newest first). Returns a new array. */
+export function sortNewestFirst(posts: OripaPostItem[]): OripaPostItem[] {
+  return [...posts].sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+}
+
+/**
+ * Keep only the first (newest) post per storeId.
+ * Input must be sorted newest-first before calling.
+ * Returns a new array.
+ */
+export function deduplicateByStore(posts: OripaPostItem[]): OripaPostItem[] {
+  const seen = new Set<string>();
+  const result: OripaPostItem[] = [];
+  for (const post of posts) {
+    if (!seen.has(post.storeId)) {
+      seen.add(post.storeId);
+      result.push(post);
+    }
+  }
+  return result;
+}
+
+/** Limit the result list to at most `limit` items. */
+export function capResults(posts: OripaPostItem[], limit: number): OripaPostItem[] {
+  return posts.slice(0, limit);
+}
+
+/** Map OripaPostItem[] to OripaPostSummary[] for the UI layer. */
+export function mapToSummary(posts: OripaPostItem[]): OripaPostSummary[] {
+  return posts.map((p) => ({
+    postId: p.postId,
+    storeId: p.storeId,
+    storeName: p.storeName,
+    createdAt: p.createdAt,
+    ...(p.price !== undefined && { price: p.price }),
+    ...(p.stockCount !== undefined && { stockCount: p.stockCount }),
+  }));
+}
+
+// ─── Orchestrator ─────────────────────────────────────────────────────────────
+
+/**
+ * Top-level function called by the Next.js Server Component.
+ * Queries DynamoDB, applies all processing, and returns UI-ready summaries.
+ * Returns [] if no stores have same-day on-sale stock.
+ */
+export async function getTodayOnSalePosts(): Promise<OripaPostSummary[]> {
+  const client = DynamoDBDocumentClient.from(
+    new DynamoDBClient({ region: process.env.AWS_REGION ?? "ap-northeast-1" }),
+  );
+  const dateJST = getTodayJST();
+
+  try {
+    const results = await Promise.all(
+      AREAS.map((area) =>
+        queryOnSalePostsByDate(client, TABLE_NAME, area, dateJST, MAX_RESULTS),
+      ),
+    );
+    const all = results.flat();
+    return mapToSummary(capResults(deduplicateByStore(sortNewestFirst(all)), MAX_RESULTS));
+  } catch (err) {
+    console.error("[getTodayOnSalePosts] DynamoDB query failed:", err);
+    return [];
+  }
+}
