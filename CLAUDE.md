@@ -1,6 +1,6 @@
 # oripanow Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-13
+Auto-generated from all feature plans. Last updated: 2026-04-14
 
 ## Active Technologies
 - TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, AWS SDK v3 (DynamoDB DocumentClient)
@@ -13,6 +13,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-13
 - `twitter-api-v2` (Twitter API v2 client), `ulid`, EventBridge hourly schedule (005-twitter-fetch)
 - TypeScript 5.x / Node.js 22 LTS (Lambda `nodejs22.x`) + `@anthropic-ai/sdk` (Claude API), `@aws-sdk/lib-dynamodb`, `ulid` (006-ai-tweet-analysis)
 - DynamoDB — `tweets` (read+update), `stores` (read), `oripa-posts` (write) (006-ai-tweet-analysis)
+- TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`), `@aws-sdk/lib-dynamodb`, `@oripa-now/db`, `@oripa-now/types` (007-recent-posts-top-page)
+- DynamoDB — `oripa-posts` table, GSI1 (`areaStatusDate` → `createdAt`) (007-recent-posts-top-page)
 
 ## Project Structure
 
@@ -54,6 +56,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 007-recent-posts-top-page: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`), `@aws-sdk/lib-dynamodb`, `@oripa-now/db`, `@oripa-now/types`
 - 006-ai-tweet-analysis: Added TypeScript 5.x / Node.js 22 LTS (Lambda `nodejs22.x`) + `@anthropic-ai/sdk` (Claude API), `@aws-sdk/lib-dynamodb`, `ulid`
 - 005-twitter-fetch: Added `twitter-api-v2`, `ulid` (in batch), EventBridge hourly schedule, SSM for Twitter Bearer token
-- 004-top-page-stores: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]

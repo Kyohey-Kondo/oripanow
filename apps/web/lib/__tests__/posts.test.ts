@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { OripaPostItem } from "@oripa-now/db";
 import {
   capResults,
-  deduplicateByStore,
   mapToSummary,
   sortNewestFirst,
 } from "../posts";
@@ -54,37 +53,6 @@ describe("sortNewestFirst", () => {
   });
 });
 
-// ─── deduplicateByStore ───────────────────────────────────────────────────────
-
-describe("deduplicateByStore", () => {
-  it("T-04: two posts with same storeId — returns only the first (newest)", () => {
-    const newer = makePost({
-      postId: "post-newer",
-      storeId: "store-A",
-      createdAt: "2026-04-13T10:00:00.000Z",
-    });
-    const older = makePost({
-      postId: "post-older",
-      storeId: "store-A",
-      createdAt: "2026-04-13T08:00:00.000Z",
-    });
-    // input must be sorted newest-first
-    const result = deduplicateByStore([newer, older]);
-    expect(result).toHaveLength(1);
-    expect(result[0].postId).toBe("post-newer");
-  });
-
-  it("T-05: two posts with different storeId — both returned", () => {
-    const postA = makePost({ postId: "post-A", storeId: "store-A" });
-    const postB = makePost({ postId: "post-B", storeId: "store-B" });
-    const result = deduplicateByStore([postA, postB]);
-    expect(result).toHaveLength(2);
-  });
-
-  it("T-06: empty input returns []", () => {
-    expect(deduplicateByStore([])).toEqual([]);
-  });
-});
 
 // ─── capResults ───────────────────────────────────────────────────────────────
 
@@ -125,6 +93,7 @@ describe("mapToSummary", () => {
     expect(summary.storeId).toBe("store-map");
     expect(summary.storeName).toBe("Map Store");
     expect(summary.createdAt).toBe("2026-04-13T09:30:00.000Z");
+    expect(summary.saleAt).toBe("2026-04-13");
     expect(summary.price).toBe(3000);
     expect(summary.stockCount).toBe(10);
   });
@@ -134,7 +103,7 @@ describe("mapToSummary", () => {
 
 describe("pipeline (empty-state)", () => {
   it("T-10: all functions composed with empty input returns []", () => {
-    const result = mapToSummary(capResults(deduplicateByStore(sortNewestFirst([])), 50));
+    const result = mapToSummary(capResults(sortNewestFirst([]), 50));
     expect(result).toEqual([]);
   });
 });

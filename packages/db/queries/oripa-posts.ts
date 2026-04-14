@@ -16,6 +16,41 @@ export function getTodayJST(): string {
 }
 
 /**
+ * Returns the last `days` dates in JST as "YYYY-MM-DD" strings, newest first.
+ */
+export function getRecentDatesJST(days = 14): string[] {
+  return Array.from({ length: days }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    return new Intl.DateTimeFormat("ja-JP", {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    })
+      .format(d)
+      .replace(/\//g, "-");
+  });
+}
+
+/**
+ * Query on-sale posts across the last `days` days for a single area.
+ * All date queries run in parallel via Promise.all.
+ */
+export async function queryRecentOnSalePostsByArea(
+  client: DynamoDBDocumentClient,
+  tableName: string,
+  area: string,
+  days = 14,
+): Promise<OripaPostItem[]> {
+  const dates = getRecentDatesJST(days);
+  const results = await Promise.all(
+    dates.map((date) => queryOnSalePostsByDate(client, tableName, area, date)),
+  );
+  return results.flat();
+}
+
+/**
  * Query GSI1 on oripa-posts for on-sale posts in a given area for the specified date.
  * GSI1 PK = "areaStatusDate" (e.g. "tokyo#on_sale#2026-04-13"), SK = "createdAt".
  * Results are returned newest-first (ScanIndexForward=false).
