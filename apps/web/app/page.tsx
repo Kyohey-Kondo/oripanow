@@ -2,15 +2,36 @@ import { getTodayOnSalePosts } from '../lib/posts';
 
 export const dynamic = 'force-dynamic';
 
-export default async function HomePage() {
-  const summaries = await getTodayOnSalePosts();
+const AREA_LABELS: Record<string, string> = {
+  akihabara:   '秋葉原',
+  kawagoe:     '川越',
+  omiya:       '大宮',
+  urawamisono: '浦和美園',
+};
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ area?: string }>;
+}) {
+  const { area } = await searchParams;
+  const summaries = await getTodayOnSalePosts(area);
+
+  const activeBtn: React.CSSProperties = { background: '#333', color: '#fff', padding: '6px 14px', borderRadius: '4px', textDecoration: 'none', fontWeight: 'bold' };
+  const inactiveBtn: React.CSSProperties = { background: '#eee', color: '#333', padding: '6px 14px', borderRadius: '4px', textDecoration: 'none' };
 
   return (
     <main>
       <h1>Oripa Sale Information</h1>
-      <p style={{ color: '#666', marginBottom: '16px' }}>
+      <p style={{ color: '#666', marginBottom: '12px' }}>
         Most recent available info per store — sorted by newest sale date
       </p>
+      <nav style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <a href="/" style={!area ? activeBtn : inactiveBtn}>すべて</a>
+        {Object.entries(AREA_LABELS).map(([key, label]) => (
+          <a key={key} href={`/?area=${key}`} style={area === key ? activeBtn : inactiveBtn}>{label}</a>
+        ))}
+      </nav>
       {summaries.length === 0 ? (
         <p>No stores with available stock in the last 14 days.</p>
       ) : (

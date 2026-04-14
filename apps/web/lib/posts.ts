@@ -42,17 +42,22 @@ export function mapToSummary(posts: OripaPostItem[]): OripaPostSummary[] {
 /**
  * Top-level function called by the Next.js Server Component.
  * Queries DynamoDB, applies all processing, and returns UI-ready summaries.
- * Returns [] if no stores have same-day on-sale stock.
+ * Returns [] if no stores have available stock in the last 14 days.
+ * When `area` is a known area key, only that area is queried.
  */
-export async function getTodayOnSalePosts(): Promise<OripaPostSummary[]> {
+export async function getTodayOnSalePosts(area?: string): Promise<OripaPostSummary[]> {
   const client = DynamoDBDocumentClient.from(
     new DynamoDBClient({ region: process.env.AWS_REGION ?? "ap-northeast-1" }),
   );
 
+  const areasToQuery = area && AREAS.includes(area as typeof AREAS[number])
+    ? [area as typeof AREAS[number]]
+    : AREAS;
+
   try {
     const results = await Promise.all(
-      AREAS.map((area) =>
-        queryRecentOnSalePostsByArea(client, TABLE_NAME, area),
+      areasToQuery.map((a) =>
+        queryRecentOnSalePostsByArea(client, TABLE_NAME, a),
       ),
     );
     const all = results.flat();
