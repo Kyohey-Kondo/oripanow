@@ -51,47 +51,60 @@ export async function saveTweets(
 }
 
 /**
- * Write an OripaPost record derived from AI analysis of a tweet.
+ * Write OripaPost records derived from AI analysis of a tweet.
+ * Creates one record per price tier (result.items). Returns the number of records written.
+ * postId for item[0] = tweetId; item[i>0] = "{tweetId}-{i}" to keep idempotency per tier.
  */
 export async function saveOripaPost(
   docClient: DynamoDBDocumentClient,
   result: AnalysisResult,
   tweet: TweetItem,
   store: StoreItem,
-): Promise<void> {
+): Promise<number> {
   const now = new Date().toISOString();
   const saleAt = result.saleAt ?? now.slice(0, 10);
+  // Guarantee at least one item even if AI returned an empty array
+  const items = result.items.length > 0 ? result.items : [{}];
+  let written = 0;
 
-  const item: OripaPostItem = {
-    postId: tweet.tweetId,
-    storeId: store.storeId,
-    tweetId: tweet.tweetId,
-    status: result.status as OripaPostItem['status'],
-    price: result.price,
-    stockCount: result.stockCount,
-    saleAt,
-    rawText: tweet.content,
-    createdAt: now,
-    updatedAt: now,
-    areaStatusDate: `${store.area}#${result.status}#${saleAt}`,
-    storeName: store.name,
-    storeAddress: store.address,
-  };
+  for (let i = 0; i < items.length; i++) {
+    const tier = items[i];
+    const postId = i === 0 ? tweet.tweetId : `${tweet.tweetId}-${i}`;
 
-  try {
-    await docClient.send(
-      new PutCommand({
-        TableName: TABLE_NAMES.oripaPosts,
-        Item: item,
-        ConditionExpression: 'attribute_not_exists(postId)',
-      }),
-    );
-  } catch (err: unknown) {
-    if ((err as { name?: string }).name === 'ConditionalCheckFailedException') {
-      return; // Already exists — idempotent skip
+    const post: OripaPostItem = {
+      postId,
+      storeId: store.storeId,
+      tweetId: tweet.tweetId,
+      status: result.status as OripaPostItem['status'],
+      price: tier.price,
+      stockCount: tier.stockCount,
+      saleAt,
+      rawText: tweet.content,
+      createdAt: now,
+      updatedAt: now,
+      areaStatusDate: `${store.area}#${result.status}#${saleAt}`,
+      storeName: store.name,
+      storeAddress: store.address,
+    };
+
+    try {
+      await docClient.send(
+        new PutCommand({
+          TableName: TABLE_NAMES.oripaPosts,
+          Item: post,
+          ConditionExpression: 'attribute_not_exists(postId)',
+        }),
+      );
+      written++;
+    } catch (err: unknown) {
+      if ((err as { name?: string }).name === 'ConditionalCheckFailedException') {
+        continue; // Already exists — idempotent skip
+      }
+      throw err;
     }
-    throw err;
   }
+
+  return written;
 }
 
 /**

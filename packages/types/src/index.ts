@@ -4,6 +4,10 @@ export interface OripaPostSummary {
   storeName: string;
   /** ISO timestamp of when this post was created (for display and sort ordering) */
   createdAt: string;
+  /** Advertised sale date in JST (YYYY-MM-DD) */
+  saleAt: string;
+  /** Twitter tweet ID — used to construct the tweet URL */
+  tweetId: string;
   /** Price in JPY, if known */
   price?: number;
   /** Stock count, if known */

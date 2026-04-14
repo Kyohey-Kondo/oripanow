@@ -1,14 +1,13 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import {
-  getTodayJST,
-  queryOnSalePostsByDate,
+  queryRecentOnSalePostsByArea,
   TABLE_NAME,
 } from "@oripa-now/db/queries/oripa-posts";
 import type { OripaPostItem } from "@oripa-now/db";
 import type { OripaPostSummary } from "@oripa-now/types";
 
-const AREAS = ["tokyo", "omiya"] as const;
+const AREAS = ["akihabara", "kawagoe", "omiya", "urawamisono"] as const;
 const MAX_RESULTS = 50;
 
 // ─── Pure functions ───────────────────────────────────────────────────────────
@@ -18,22 +17,6 @@ export function sortNewestFirst(posts: OripaPostItem[]): OripaPostItem[] {
   return [...posts].sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
 }
 
-/**
- * Keep only the first (newest) post per storeId.
- * Input must be sorted newest-first before calling.
- * Returns a new array.
- */
-export function deduplicateByStore(posts: OripaPostItem[]): OripaPostItem[] {
-  const seen = new Set<string>();
-  const result: OripaPostItem[] = [];
-  for (const post of posts) {
-    if (!seen.has(post.storeId)) {
-      seen.add(post.storeId);
-      result.push(post);
-    }
-  }
-  return result;
-}
 
 /** Limit the result list to at most `limit` items. */
 export function capResults(posts: OripaPostItem[], limit: number): OripaPostItem[] {
@@ -47,6 +30,8 @@ export function mapToSummary(posts: OripaPostItem[]): OripaPostSummary[] {
     storeId: p.storeId,
     storeName: p.storeName,
     createdAt: p.createdAt,
+    saleAt: p.saleAt,
+    tweetId: p.tweetId,
     ...(p.price !== undefined && { price: p.price }),
     ...(p.stockCount !== undefined && { stockCount: p.stockCount }),
   }));
@@ -63,16 +48,15 @@ export async function getTodayOnSalePosts(): Promise<OripaPostSummary[]> {
   const client = DynamoDBDocumentClient.from(
     new DynamoDBClient({ region: process.env.AWS_REGION ?? "ap-northeast-1" }),
   );
-  const dateJST = getTodayJST();
 
   try {
     const results = await Promise.all(
       AREAS.map((area) =>
-        queryOnSalePostsByDate(client, TABLE_NAME, area, dateJST, MAX_RESULTS),
+        queryRecentOnSalePostsByArea(client, TABLE_NAME, area),
       ),
     );
     const all = results.flat();
-    return mapToSummary(capResults(deduplicateByStore(sortNewestFirst(all)), MAX_RESULTS));
+    return mapToSummary(capResults(sortNewestFirst(all), MAX_RESULTS));
   } catch (err) {
     console.error("[getTodayOnSalePosts] DynamoDB query failed:", err);
     return [];

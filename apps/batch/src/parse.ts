@@ -6,11 +6,15 @@ import {
 } from '@aws-sdk/client-bedrock-runtime';
 import type { TweetItem } from '@oripa-now/db';
 
-export type AnalysisResult = {
-  status: 'on_sale' | 'upcoming' | 'sold_out' | 'not_oripa';
+export type OripaItem = {
   price?: number;
   stockCount?: number;
+};
+
+export type AnalysisResult = {
+  status: 'on_sale' | 'upcoming' | 'sold_out' | 'not_oripa';
   saleAt?: string; // YYYY-MM-DD JST
+  items: OripaItem[]; // one entry per distinct price tier; empty for not_oripa
 };
 
 const MODEL = process.env.ANTHROPIC_MODEL ?? 'jp.anthropic.claude-haiku-4-5-20251001-v1:0';
@@ -29,21 +33,31 @@ const TOOL: Tool = {
             description:
               'on_sale: currently selling now. upcoming: announced for a future date. sold_out: was selling but now sold out. not_oripa: not about a Pokémon card oripa sale.',
           },
-          price: {
-            type: 'integer',
-            description: 'Price in JPY. Omit if not mentioned.',
-          },
-          stockCount: {
-            type: 'integer',
-            description: 'Number of packs available. Omit if not mentioned.',
-          },
           saleAt: {
             type: 'string',
             description:
               "Sale date in YYYY-MM-DD format (JST). For on_sale/sold_out use today's date. For upcoming without specific date use tomorrow's date. Omit for not_oripa.",
           },
+          items: {
+            type: 'array',
+            description:
+              'One entry per distinct price tier or product mentioned in the tweet. Use an empty array for not_oripa.',
+            items: {
+              type: 'object',
+              properties: {
+                price: {
+                  type: 'integer',
+                  description: 'Price in JPY for this tier. Omit if not mentioned.',
+                },
+                stockCount: {
+                  type: 'integer',
+                  description: 'Number of packs available for this tier. Omit if not mentioned.',
+                },
+              },
+            },
+          },
         },
-        required: ['status'],
+        required: ['status', 'items'],
       },
     },
   },

@@ -82,9 +82,8 @@ export const handler = async (_event: unknown): Promise<AnalyzeRunResult> => {
         skipped++;
         await markTweetProcessed(docClient, tweet.tweetId);
       } else {
-        await saveOripaPost(docClient, result, tweet, store);
+        postsCreated += await saveOripaPost(docClient, result, tweet, store);
         await markTweetProcessed(docClient, tweet.tweetId);
-        postsCreated++;
       }
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err);
