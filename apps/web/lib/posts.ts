@@ -12,11 +12,25 @@ const MAX_RESULTS = 50;
 
 // ─── Pure functions ───────────────────────────────────────────────────────────
 
-/** Sort posts by createdAt descending (newest first). Returns a new array. */
+/** Sort posts by tweetId descending (newest tweet first). Returns a new array. */
 export function sortNewestFirst(posts: OripaPostItem[]): OripaPostItem[] {
-  return [...posts].sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+  return [...posts].sort((a, b) => (BigInt(a.tweetId) < BigInt(b.tweetId) ? 1 : BigInt(a.tweetId) > BigInt(b.tweetId) ? -1 : 0));
 }
 
+
+/**
+ * Deduplicate posts with the same storeId + price + stockCount.
+ * Assumes posts are already sorted newest-first — keeps the first occurrence.
+ */
+export function deduplicateByPriceAndStock(posts: OripaPostItem[]): OripaPostItem[] {
+  const seen = new Set<string>();
+  return posts.filter((p) => {
+    const key = `${p.storeId}#${p.price ?? ""}#${p.stockCount ?? ""}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 /** Limit the result list to at most `limit` items. */
 export function capResults(posts: OripaPostItem[], limit: number): OripaPostItem[] {
@@ -61,7 +75,7 @@ export async function getTodayOnSalePosts(area?: string): Promise<OripaPostSumma
       ),
     );
     const all = results.flat();
-    return mapToSummary(capResults(sortNewestFirst(all), MAX_RESULTS));
+    return mapToSummary(capResults(deduplicateByPriceAndStock(sortNewestFirst(all)), MAX_RESULTS));
   } catch (err) {
     console.error("[getTodayOnSalePosts] DynamoDB query failed:", err);
     return [];

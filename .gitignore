@@ -34,3 +34,7 @@ Thumbs.db
 
 # Test coverage
 coverage/
+
+# Script data (store CSVs etc — keep out of repo)
+scripts/data/*
+!scripts/data/.gitkeep

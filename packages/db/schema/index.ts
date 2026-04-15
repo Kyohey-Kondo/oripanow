@@ -25,7 +25,7 @@ export type StoreItem = {
   storeId: string;          // ULID — PK of ${env}-stores
   name: string;
   twitterUsername: string;
-  area: "tokyo" | "omiya";
+  area: "tokyo" | "omiya" | "akihabara";
   address?: string;
   lat?: number;
   lng?: number;

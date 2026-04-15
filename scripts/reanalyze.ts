@@ -7,7 +7,7 @@
  *   5. Invoke the analyze Lambda (re-processes tweets with current AI schema)
  *
  * Usage (from repo root):
- *   AWS_REGION=ap-northeast-1 pnpm tsx scripts/reanalyze.ts
+ *   AWS_REGION=ap-northeast-1 pnpm --filter @oripa-now/scripts exec tsx reanalyze.ts
  *
  * Options (env vars):
  *   DEPLOY_ENV=dev (default)  — target environment

@@ -2,6 +2,12 @@ import { getTodayOnSalePosts } from '../lib/posts';
 
 export const dynamic = 'force-dynamic';
 
+/** Derive tweet timestamp from Twitter snowflake ID. */
+function tweetIdToDate(tweetId: string): Date {
+  const TWITTER_EPOCH = 1288834974657n;
+  return new Date(Number((BigInt(tweetId) >> 22n) + TWITTER_EPOCH));
+}
+
 const AREA_LABELS: Record<string, string> = {
   akihabara:   '秋葉原',
   kawagoe:     '川越',
@@ -40,7 +46,7 @@ export default async function HomePage({
             <tr style={{ borderBottom: '2px solid #ccc', textAlign: 'left' }}>
               <th style={{ padding: '8px' }}>Store</th>
               <th style={{ padding: '8px' }}>Sale Date</th>
-              <th style={{ padding: '8px' }}>Analyzed At</th>
+              <th style={{ padding: '8px' }}>Tweeted At</th>
               <th style={{ padding: '8px' }}>Price</th>
               <th style={{ padding: '8px' }}>Stock</th>
               <th style={{ padding: '8px' }}>Tweet</th>
@@ -52,7 +58,7 @@ export default async function HomePage({
                 <td style={{ padding: '8px' }}>{s.storeName}</td>
                 <td style={{ padding: '8px' }}>{s.saleAt}</td>
                 <td style={{ padding: '8px' }}>
-                  {new Date(s.createdAt).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
+                  {tweetIdToDate(s.tweetId).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
                 </td>
                 <td style={{ padding: '8px' }}>
                   {s.price !== undefined ? `¥${s.price.toLocaleString()}` : '—'}

@@ -3,10 +3,10 @@
  *
  * Usage:
  *   TWITTER_BEARER_TOKEN=<token> AWS_REGION=ap-northeast-1 \
- *     pnpm --filter @oripa-now/batch exec tsx src/backfill.ts
+ *     pnpm --filter @oripa-now/scripts exec tsx backfill.ts
  *
  * Or load token from SSM automatically (requires aws CLI credentials):
- *   AWS_REGION=ap-northeast-1 pnpm --filter @oripa-now/batch exec tsx src/backfill.ts
+ *   AWS_REGION=ap-northeast-1 pnpm --filter @oripa-now/scripts exec tsx backfill.ts
  *
  * What it does:
  *   1. Deletes dummy tweets (tweetId starting with "tw-")
@@ -26,7 +26,7 @@ import {
 } from '@aws-sdk/lib-dynamodb';
 import { TwitterApi, type TweetV2 } from 'twitter-api-v2';
 import { TABLE_NAMES, type StoreItem } from '@oripa-now/db';
-import { saveTweets, updateLastFetchedTweetId } from './save';
+import { saveTweets, updateLastFetchedTweetId } from '../apps/batch/src/save';
 
 const BACKFILL_DAYS = 7;
 const MAX_RESULTS_PER_PAGE = 100;

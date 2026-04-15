@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { OripaPostItem } from "@oripa-now/db";
 import {
   capResults,
+  deduplicateByPriceAndStock,
   mapToSummary,
   sortNewestFirst,
 } from "../posts";
@@ -28,14 +29,8 @@ function makePost(overrides: Partial<OripaPostItem> = {}): OripaPostItem {
 
 describe("sortNewestFirst", () => {
   it("T-01: newer post appears at index 0", () => {
-    const older = makePost({
-      postId: "post-older",
-      createdAt: "2026-04-13T08:00:00.000Z",
-    });
-    const newer = makePost({
-      postId: "post-newer",
-      createdAt: "2026-04-13T10:00:00.000Z",
-    });
+    const older = makePost({ postId: "post-older", tweetId: "1000000000000000000" });
+    const newer = makePost({ postId: "post-newer", tweetId: "2000000000000000000" });
     const result = sortNewestFirst([older, newer]);
     expect(result[0].postId).toBe("post-newer");
     expect(result[1].postId).toBe("post-older");
@@ -53,6 +48,30 @@ describe("sortNewestFirst", () => {
   });
 });
 
+
+// ─── deduplicateByPriceAndStock ───────────────────────────────────────────────
+
+describe("deduplicateByPriceAndStock", () => {
+  it("T-04: same store, same price+stock — keeps newest only", () => {
+    const newer = makePost({ postId: "post-new", storeId: "store-a", price: 3000, stockCount: 10, createdAt: "2026-04-13T10:00:00.000Z" });
+    const older = makePost({ postId: "post-old", storeId: "store-a", price: 3000, stockCount: 10, createdAt: "2026-04-13T09:00:00.000Z" });
+    const result = deduplicateByPriceAndStock([newer, older]);
+    expect(result).toHaveLength(1);
+    expect(result[0].postId).toBe("post-new");
+  });
+
+  it("T-05: same store, different price — keeps both", () => {
+    const a = makePost({ postId: "post-a", storeId: "store-a", price: 1000, stockCount: 10 });
+    const b = makePost({ postId: "post-b", storeId: "store-a", price: 3000, stockCount: 10 });
+    expect(deduplicateByPriceAndStock([a, b])).toHaveLength(2);
+  });
+
+  it("T-06: different stores, same price+stock — keeps both", () => {
+    const a = makePost({ postId: "post-a", storeId: "store-a", price: 3000, stockCount: 10 });
+    const b = makePost({ postId: "post-b", storeId: "store-b", price: 3000, stockCount: 10 });
+    expect(deduplicateByPriceAndStock([a, b])).toHaveLength(2);
+  });
+});
 
 // ─── capResults ───────────────────────────────────────────────────────────────
 

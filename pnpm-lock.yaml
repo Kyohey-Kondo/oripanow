@@ -183,6 +183,46 @@ importers:
         specifier: ^5.8.3
         version: 5.9.3
 
+  scripts:
+    dependencies:
+      '@aws-sdk/client-dynamodb':
+        specifier: ^3.797.0
+        version: 3.1030.0
+      '@aws-sdk/client-lambda':
+        specifier: ^3.1030.0
+        version: 3.1030.0
+      '@aws-sdk/client-ssm':
+        specifier: ^3.1029.0
+        version: 3.1029.0
+      '@aws-sdk/lib-dynamodb':
+        specifier: ^3.797.0
+        version: 3.1030.0(@aws-sdk/client-dynamodb@3.1030.0)
+      '@oripa-now/db':
+        specifier: workspace:*
+        version: link:../packages/db
+      csv-parse:
+        specifier: ^5.6.0
+        version: 5.6.0
+      twitter-api-v2:
+        specifier: ^1.29.0
+        version: 1.29.0
+      ulid:
+        specifier: ^3.0.2
+        version: 3.0.2
+    devDependencies:
+      '@oripa-now/config':
+        specifier: workspace:*
+        version: link:../packages/config
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.19.17
+      tsx:
+        specifier: ^4.19.3
+        version: 4.21.0
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+
 packages:
 
   '@ampproject/remapping@2.3.0':
@@ -1474,6 +1514,9 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
+
+  csv-parse@5.6.0:
+    resolution: {integrity: sha512-l3nz3euub2QMg5ouu5U09Ew9Wf6/wQ8I++ch1loQ0ljmzhmfZYrH9fflS22i/PQEvsPvxCwxgz5q7UB8K1JO4Q==}
 
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
@@ -3510,6 +3553,8 @@ snapshots:
       which: 2.0.2
 
   csstype@3.2.3: {}
+
+  csv-parse@5.6.0: {}
 
   debug@4.4.3:
     dependencies:
