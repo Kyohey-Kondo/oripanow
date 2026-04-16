@@ -1,10 +1,11 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, BatchGetCommand } from "@aws-sdk/lib-dynamodb";
 import {
   queryRecentOnSalePostsByArea,
   TABLE_NAME,
 } from "@oripa-now/db/queries/oripa-posts";
-import type { OripaPostItem } from "@oripa-now/db";
+import type { OripaPostItem, StoreItem } from "@oripa-now/db";
+import { TABLE_NAMES } from "@oripa-now/db";
 import type { OripaPostSummary } from "@oripa-now/types";
 
 const AREAS = ["akihabara", "kawagoe", "omiya", "urawamisono"] as const;
@@ -38,11 +39,15 @@ export function capResults(posts: OripaPostItem[], limit: number): OripaPostItem
 }
 
 /** Map OripaPostItem[] to OripaPostSummary[] for the UI layer. */
-export function mapToSummary(posts: OripaPostItem[]): OripaPostSummary[] {
+export function mapToSummary(
+  posts: OripaPostItem[],
+  storeMap: Map<string, string> = new Map(),
+): OripaPostSummary[] {
   return posts.map((p) => ({
     postId: p.postId,
     storeId: p.storeId,
     storeName: p.storeName,
+    twitterUsername: storeMap.get(p.storeId) ?? '',
     createdAt: p.createdAt,
     saleAt: p.saleAt,
     tweetId: p.tweetId,
@@ -75,7 +80,25 @@ export async function getTodayOnSalePosts(area?: string): Promise<OripaPostSumma
       ),
     );
     const all = results.flat();
-    return mapToSummary(capResults(deduplicateByPriceAndStock(sortNewestFirst(all)), MAX_RESULTS));
+    const processed = capResults(deduplicateByPriceAndStock(sortNewestFirst(all)), MAX_RESULTS);
+
+    // Fetch twitterUsername for unique storeIds via BatchGet
+    const storeIds = [...new Set(processed.map((p) => p.storeId))];
+    const storeMap = new Map<string, string>();
+    if (storeIds.length > 0) {
+      const batchResult = await client.send(new BatchGetCommand({
+        RequestItems: {
+          [TABLE_NAMES.stores]: {
+            Keys: storeIds.map((id) => ({ storeId: id })),
+            ProjectionExpression: 'storeId, twitterUsername',
+          },
+        },
+      }));
+      const stores = (batchResult.Responses?.[TABLE_NAMES.stores] ?? []) as StoreItem[];
+      for (const s of stores) storeMap.set(s.storeId, s.twitterUsername);
+    }
+
+    return mapToSummary(processed, storeMap);
   } catch (err) {
     console.error("[getTodayOnSalePosts] DynamoDB query failed:", err);
     return [];

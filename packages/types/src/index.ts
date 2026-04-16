@@ -8,6 +8,8 @@ export interface OripaPostSummary {
   saleAt: string;
   /** Twitter tweet ID — used to construct the tweet URL */
   tweetId: string;
+  /** Twitter username of the store — used to construct oEmbed URL */
+  twitterUsername: string;
   /** Price in JPY, if known */
   price?: number;
   /** Stock count, if known */
