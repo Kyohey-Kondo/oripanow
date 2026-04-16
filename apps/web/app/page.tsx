@@ -100,11 +100,14 @@ export default async function HomePage({
         </div>
 
         {oEmbeds.some(Boolean) && (
-          <aside style={{ width: '380px', flexShrink: 0 }}>
-<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <aside style={{ width: '285px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {oEmbeds.map((html, i) =>
                 html ? (
-                  <div key={top3[i].tweetId} dangerouslySetInnerHTML={{ __html: html }} />
+                  <div key={top3[i].tweetId}
+                    style={{ zoom: 0.75 }}
+                    dangerouslySetInnerHTML={{ __html: html }}
+                  />
                 ) : null
               )}
             </div>

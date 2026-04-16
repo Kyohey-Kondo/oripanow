@@ -5,6 +5,7 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as path from 'path';
 import { Construct } from 'constructs';
 
@@ -63,10 +64,16 @@ export class WebStack extends cdk.Stack {
     });
 
     // IAM: Lambda に DynamoDB 読み取り権限を明示付与（テーブル + 全 GSI）
-    const tableArn = cdk.Stack.of(this).formatArn({
+    const storesTableName = `${deployEnv}-stores`;
+    const oripaPostsTableArn = cdk.Stack.of(this).formatArn({
       service: 'dynamodb',
       resource: 'table',
       resourceName: oripaPostsTableName,
+    });
+    const storesTableArn = cdk.Stack.of(this).formatArn({
+      service: 'dynamodb',
+      resource: 'table',
+      resourceName: storesTableName,
     });
     nextjsFn.addToRolePolicy(new iam.PolicyStatement({
       actions: [
@@ -76,7 +83,10 @@ export class WebStack extends cdk.Stack {
         'dynamodb:Query',
         'dynamodb:DescribeTable',
       ],
-      resources: [tableArn, `${tableArn}/index/*`],
+      resources: [
+        oripaPostsTableArn, `${oripaPostsTableArn}/index/*`,
+        storesTableArn, `${storesTableArn}/index/*`,
+      ],
     }));
 
     const fnUrl = nextjsFn.addFunctionUrl({
@@ -89,8 +99,28 @@ export class WebStack extends cdk.Stack {
         origin: new origins.FunctionUrlOrigin(fnUrl),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
-          originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+        originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
       },
+      additionalBehaviors: {
+        '/_next/static/*': {
+          origin: origins.S3BucketOrigin.withOriginAccessControl(assetBucket),
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_OPTIMIZED,
+        },
+      },
+    });
+
+    // Upload static assets to S3
+    new s3deploy.BucketDeployment(this, 'StaticAssets', {
+      sources: [
+        s3deploy.Source.asset(
+          path.join(__dirname, '../../../apps/web/.next/static'),
+        ),
+      ],
+      destinationBucket: assetBucket,
+      destinationKeyPrefix: '_next/static',
+      distribution,
+      distributionPaths: ['/_next/static/*'],
     });
 
     // Outputs

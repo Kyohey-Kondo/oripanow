@@ -54,6 +54,10 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 ## Spec Writing Rules
 
 - All content under `specs/` must be written in **English** (spec.md, plan.md, research.md, data-model.md, quickstart.md, tasks.md, contracts/, checklists/)
+
+## UI Development Rules
+
+- **Always verify UI changes with Playwright before deploying.** Take a screenshot and confirm the layout looks correct.
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
