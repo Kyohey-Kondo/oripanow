@@ -67,19 +67,17 @@ export default async function HomePage({
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid #ccc', textAlign: 'left' }}>
-                  <th style={{ padding: '8px' }}>Store</th>
-                  <th style={{ padding: '8px' }}>Sale Date</th>
-                  <th style={{ padding: '8px' }}>Tweeted At</th>
-                  <th style={{ padding: '8px' }}>Price</th>
-                  <th style={{ padding: '8px' }}>Stock</th>
-                  <th style={{ padding: '8px' }}>Tweet</th>
+                  <th style={{ padding: '8px' }}>店舗名</th>
+                  <th style={{ padding: '8px' }}>ツイート日時</th>
+                  <th style={{ padding: '8px' }}>価格</th>
+                  <th style={{ padding: '8px' }}>在庫数</th>
+                  <th style={{ padding: '8px' }}>ツイート</th>
                 </tr>
               </thead>
               <tbody>
                 {summaries.map((s) => (
                   <tr key={s.postId} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '8px' }}>{s.storeName}</td>
-                    <td style={{ padding: '8px' }}>{s.saleAt}</td>
+                    <td style={{ padding: '8px' }}>{s.storeName.length > 20 ? s.storeName.slice(0, 20) + '…' : s.storeName}</td>
                     <td style={{ padding: '8px' }}>
                       {tweetIdToDate(s.tweetId).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
                     </td>
