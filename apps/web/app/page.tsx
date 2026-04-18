@@ -120,7 +120,7 @@ export default async function HomePage({
                 </tbody>
               </table>
               {totalPages > 1 && (
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '16px' }}>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', marginTop: '16px' }}>
                   {pageIndex > 1 && (
                     <a href={pageUrl(pageIndex - 1, area)} style={navBtn}>← 前へ</a>
                   )}
