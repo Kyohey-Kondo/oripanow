@@ -1,7 +1,8 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, BatchGetCommand } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, BatchGetCommand, GetCommand } from "@aws-sdk/lib-dynamodb";
 import {
   queryRecentOnSalePostsByArea,
+  queryRecentPostsByStore,
   TABLE_NAME,
 } from "@oripa-now/db/queries/oripa-posts";
 import type { OripaPostItem, StoreItem } from "@oripa-now/db";
@@ -56,7 +57,44 @@ export function mapToSummary(
   }));
 }
 
-// ─── Orchestrator ─────────────────────────────────────────────────────────────
+// ─── Orchestrators ───────────────────────────────────────────────────────────
+
+/**
+ * Shop detail page: fetch all posts for a single store in the last 14 days.
+ * Returns summaries plus the store's name and twitterUsername for the heading and oEmbed.
+ */
+export async function getShopPosts(storeId: string): Promise<{
+  summaries: OripaPostSummary[];
+  storeName: string;
+  twitterUsername: string;
+}> {
+  const client = DynamoDBDocumentClient.from(
+    new DynamoDBClient({ region: process.env.AWS_REGION ?? "ap-northeast-1" }),
+  );
+
+  try {
+    const [posts, storeResult] = await Promise.all([
+      queryRecentPostsByStore(client, TABLE_NAME, storeId),
+      client.send(new GetCommand({
+        TableName: TABLE_NAMES.stores,
+        Key: { storeId },
+        ProjectionExpression: "storeId, #n, twitterUsername",
+        ExpressionAttributeNames: { "#n": "name" },
+      })),
+    ]);
+
+    const store = storeResult.Item as StoreItem | undefined;
+    const storeName = store?.name ?? "";
+    const twitterUsername = store?.twitterUsername ?? "";
+
+    const storeMap = new Map([[storeId, twitterUsername]]);
+    const processed = capResults(deduplicateByPriceAndStock(sortNewestFirst(posts)), MAX_RESULTS);
+    return { summaries: mapToSummary(processed, storeMap), storeName, twitterUsername };
+  } catch (err) {
+    console.error("[getShopPosts] DynamoDB query failed:", err);
+    return { summaries: [], storeName: "", twitterUsername: "" };
+  }
+}
 
 /**
  * Top-level function called by the Next.js Server Component.

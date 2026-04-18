@@ -77,5 +77,35 @@ export async function queryOnSalePostsByDate(
   return (result.Items ?? []) as OripaPostItem[];
 }
 
+/**
+ * Query GSI2 on oripa-posts for all posts from a single store in the last `days` days.
+ * GSI2 PK = "storeId", SK = "createdAt". Results are returned newest-first.
+ */
+export async function queryRecentPostsByStore(
+  client: DynamoDBDocumentClient,
+  tableName: string,
+  storeId: string,
+  days = 14,
+): Promise<OripaPostItem[]> {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const cutoffISO = cutoff.toISOString();
+
+  const result = await client.send(
+    new QueryCommand({
+      TableName: tableName,
+      IndexName: GSI.oripaPostsByStore,
+      KeyConditionExpression: "storeId = :storeId AND createdAt >= :cutoff",
+      ExpressionAttributeValues: {
+        ":storeId": storeId,
+        ":cutoff": cutoffISO,
+      },
+      ScanIndexForward: false,
+      Limit: 100,
+    }),
+  );
+  return (result.Items ?? []) as OripaPostItem[];
+}
+
 export const TABLE_NAME = TABLE_NAMES.oripaPosts;
 export { TABLE_NAMES };
