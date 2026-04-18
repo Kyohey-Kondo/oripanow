@@ -121,13 +121,15 @@ export default async function HomePage({
               </table>
               {totalPages > 1 && (
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', marginTop: '16px' }}>
-                  {pageIndex > 1 && (
-                    <a href={pageUrl(pageIndex - 1, area)} style={navBtn}>← 前へ</a>
-                  )}
+                  {pageIndex > 1
+                    ? <a href={pageUrl(pageIndex - 1, area)} style={navBtn}>← 前へ</a>
+                    : <span style={{ ...navBtn, color: '#bbb', cursor: 'default' }}>← 前へ</span>
+                  }
                   <span style={{ color: '#666', fontSize: '14px' }}>{pageIndex} / {totalPages} ページ</span>
-                  {pageIndex < totalPages && (
-                    <a href={pageUrl(pageIndex + 1, area)} style={navBtn}>次へ →</a>
-                  )}
+                  {pageIndex < totalPages
+                    ? <a href={pageUrl(pageIndex + 1, area)} style={navBtn}>次へ →</a>
+                    : <span style={{ ...navBtn, color: '#bbb', cursor: 'default' }}>次へ →</span>
+                  }
                 </div>
               )}
             </>
