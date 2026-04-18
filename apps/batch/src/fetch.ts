@@ -28,16 +28,16 @@ export async function fetchTweetsForStore(
 ): Promise<TweetV2[]> {
   const query = buildQuery(store.twitterUsername);
 
-  const startTime = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
   const params: Parameters<typeof client.v2.search>[1] = {
     max_results: 10,
     'tweet.fields': ['created_at', 'author_id', 'id'],
-    start_time: startTime,
   };
 
   if (sinceId) {
+    // since_id and start_time cannot be used together (Twitter API returns 400)
     params.since_id = sinceId;
+  } else {
+    params.start_time = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   }
 
   console.log(JSON.stringify({ level: 'DEBUG', query, params }));

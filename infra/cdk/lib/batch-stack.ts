@@ -116,10 +116,10 @@ export class BatchStack extends cdk.Stack {
       },
     });
 
-    // ─── EventBridge: hourly schedule ────────────────────────────────────────
+    // ─── EventBridge: daily schedule (09:00 JST = 00:00 UTC) ─────────────────
     new events.Rule(this, 'BatchScheduleRule', {
       ruleName: `${deployEnv}-oripa-now-batch-fetch`,
-      schedule: events.Schedule.rate(cdk.Duration.hours(1)),
+      schedule: events.Schedule.cron({ hour: '0', minute: '0' }),
       targets: [new eventsTargets.LambdaFunction(batchFn)],
     });
 
@@ -171,7 +171,7 @@ export class BatchStack extends cdk.Stack {
 
     new events.Rule(this, 'AnalyzeScheduleRule', {
       ruleName: `${deployEnv}-oripa-now-analyze`,
-      schedule: events.Schedule.rate(cdk.Duration.hours(1)),
+      schedule: events.Schedule.cron({ hour: '0', minute: '10' }),
       targets: [new eventsTargets.LambdaFunction(analyzeFn)],
     });
 
