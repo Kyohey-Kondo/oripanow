@@ -1,5 +1,6 @@
 import Script from 'next/script';
 import { getTodayOnSalePosts } from '../lib/posts';
+import styles from './page.module.css';
 
 async function fetchOEmbed(twitterUsername: string, tweetId: string): Promise<string | null> {
   try {
@@ -47,20 +48,19 @@ export default async function HomePage({
   const inactiveBtn: React.CSSProperties = { background: '#eee', color: '#333', padding: '6px 14px', borderRadius: '4px', textDecoration: 'none' };
 
   return (
-    <main style={{ maxWidth: '1400px', margin: '0 auto', padding: '24px 32px' }}>
+    <main className={styles.main}>
       <h1>Oripa Sale Information</h1>
       <p style={{ color: '#666', marginBottom: '12px' }}>
         Most recent available info per store — sorted by newest sale date
       </p>
-      <nav style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
-        <a href="/" style={!area ? activeBtn : inactiveBtn}>すべて</a>
-        {Object.entries(AREA_LABELS).map(([key, label]) => (
-          <a key={key} href={`/?area=${key}`} style={area === key ? activeBtn : inactiveBtn}>{label}</a>
-        ))}
-      </nav>
-
-      <div style={{ display: 'flex', gap: '24px', alignItems: 'flex-start' }}>
-        <div style={{ flex: '1 1 0', minWidth: 0 }}>
+      <div className={styles.contentLayout}>
+        <div className={styles.tableColumn}>
+          <nav style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <a href="/" style={!area ? activeBtn : inactiveBtn}>すべて</a>
+            {Object.entries(AREA_LABELS).map(([key, label]) => (
+              <a key={key} href={`/?area=${key}`} style={area === key ? activeBtn : inactiveBtn}>{label}</a>
+            ))}
+          </nav>
           {summaries.length === 0 ? (
             <p>No stores with available stock in the last 14 days.</p>
           ) : (
@@ -100,8 +100,8 @@ export default async function HomePage({
         </div>
 
         {oEmbeds.some(Boolean) && (
-          <aside style={{ width: '285px', flexShrink: 0 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <aside className={styles.tweetSidebar}>
+            <div className={styles.tweetList}>
               {oEmbeds.map((html, i) =>
                 html ? (
                   <div key={top3[i].tweetId}

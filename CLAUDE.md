@@ -1,6 +1,6 @@
 # oripanow Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-14
+Auto-generated from all feature plans. Last updated: 2026-04-18
 
 ## Active Technologies
 - TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, AWS SDK v3 (DynamoDB DocumentClient)
@@ -61,6 +61,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 009-responsive-layout: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 008-area-filter-top-page: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`), `@aws-sdk/lib-dynamodb`
 - 007-recent-posts-top-page: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`), `@aws-sdk/lib-dynamodb`, `@oripa-now/db`, `@oripa-now/types`
-- 006-ai-tweet-analysis: Added TypeScript 5.x / Node.js 22 LTS (Lambda `nodejs22.x`) + `@anthropic-ai/sdk` (Claude API), `@aws-sdk/lib-dynamodb`, `ulid`
