@@ -1,4 +1,5 @@
 import Script from 'next/script';
+import { Icon } from '@iconify/react';
 import { getTodayOnSalePosts } from '../lib/posts';
 import styles from './page.module.css';
 
@@ -92,7 +93,9 @@ export default async function HomePage({
                       {s.stockCount !== undefined ? s.stockCount : '—'}
                     </td>
                     <td style={{ padding: '8px' }}>
-                      <a href={`https://x.com/i/web/status/${s.tweetId}`} target="_blank" rel="noopener noreferrer">🔗</a>
+                      <a href={`https://x.com/i/web/status/${s.tweetId}`} target="_blank" rel="noopener noreferrer">
+                        <Icon icon="ri:twitter-x-fill" width={16} height={16} />
+                      </a>
                     </td>
                   </tr>
                 ))}
