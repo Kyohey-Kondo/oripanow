@@ -36,14 +36,12 @@ export default async function ShopPage({
     .slice(0, 3);
   const oEmbeds = await Promise.all(top3.map((s) => fetchOEmbed(s.twitterUsername, s.tweetId)));
 
-  const displayName = storeName.length > 20 ? storeName.slice(0, 20) + '…' : storeName;
-
   return (
     <main className={styles.main}>
       <p style={{ marginBottom: '8px' }}>
         <a href="/" style={{ color: '#555', textDecoration: 'none' }}>← トップへ戻る</a>
       </p>
-      <h1>{displayName || 'ショップ詳細'}</h1>
+      <h1>{storeName || 'ショップ詳細'}</h1>
       <div className={styles.contentLayout}>
         <div className={styles.tableColumn}>
           {summaries.length === 0 ? (
