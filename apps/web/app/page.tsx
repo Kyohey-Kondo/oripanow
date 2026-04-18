@@ -78,7 +78,7 @@ export default async function HomePage({
                 {summaries.map((s) => (
                   <tr key={s.postId} style={{ borderBottom: '1px solid #eee' }}>
                     <td style={{ padding: '8px' }}>
-                      <a href={`/shops/${s.storeId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      <a href={`/shops/${s.storeId}`} style={{ textDecoration: 'underline', textDecorationColor: '#aaa', color: 'inherit' }}>
                         {s.storeName.length > 20 ? s.storeName.slice(0, 20) + '…' : s.storeName}
                       </a>
                     </td>
