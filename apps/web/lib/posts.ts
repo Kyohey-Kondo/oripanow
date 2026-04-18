@@ -10,7 +10,7 @@ import { TABLE_NAMES } from "@oripa-now/db";
 import type { OripaPostSummary } from "@oripa-now/types";
 
 const AREAS = ["akihabara", "kawagoe", "omiya", "urawamisono"] as const;
-const MAX_RESULTS = 50;
+const MAX_RESULTS = 60;
 
 // ─── Pure functions ───────────────────────────────────────────────────────────
 
