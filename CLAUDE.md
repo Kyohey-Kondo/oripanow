@@ -17,6 +17,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-18
 - DynamoDB — `oripa-posts` table, GSI1 (`areaStatusDate` → `createdAt`) (007-recent-posts-top-page)
 - DynamoDB via existing `queryRecentOnSalePostsByArea` (008-area-filter-top-page)
 - DynamoDB — `oripa-posts` table via GSI2 (`storeId → createdAt`), `stores` table via GetItem (010-shop-detail-page)
+- TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`, `searchParams`) (011-top-page-pagination)
+- No DynamoDB changes — existing `getTodayOnSalePosts` extended to 60 items (011-top-page-pagination)
 
 ## Project Structure
 
@@ -62,6 +64,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 011-top-page-pagination: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`, `searchParams`)
 - 010-shop-detail-page: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`), `@aws-sdk/lib-dynamodb`, `@oripa-now/db`, `@oripa-now/types`
 - 009-responsive-layout: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-- 008-area-filter-top-page: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`), `@aws-sdk/lib-dynamodb`

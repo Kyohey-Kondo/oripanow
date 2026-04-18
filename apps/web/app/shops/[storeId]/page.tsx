@@ -18,6 +18,13 @@ async function fetchOEmbed(twitterUsername: string, tweetId: string): Promise<st
 
 export const dynamic = 'force-dynamic';
 
+const PAGE_SIZE = 20;
+const MAX_PAGES = 3;
+
+function pageUrl(storeId: string, p: number): string {
+  return p > 1 ? `/shops/${storeId}?page=${p}` : `/shops/${storeId}`;
+}
+
 function tweetIdToDate(tweetId: string): Date {
   const TWITTER_EPOCH = 1288834974657n;
   return new Date(Number((BigInt(tweetId) >> 22n) + TWITTER_EPOCH));
@@ -25,16 +32,25 @@ function tweetIdToDate(tweetId: string): Date {
 
 export default async function ShopPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ storeId: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
-  const { storeId } = await params;
+  const [{ storeId }, { page }] = await Promise.all([params, searchParams]);
   const { summaries, storeName } = await getShopPosts(storeId);
+
+  // Pagination
+  const pageIndex = Math.min(Math.max(parseInt(page ?? '1') || 1, 1), MAX_PAGES);
+  const totalPages = Math.min(Math.ceil(summaries.length / PAGE_SIZE), MAX_PAGES);
+  const pageItems = summaries.slice((pageIndex - 1) * PAGE_SIZE, pageIndex * PAGE_SIZE);
 
   const top3 = summaries
     .filter((s, i, arr) => arr.findIndex((x) => x.tweetId === s.tweetId) === i)
     .slice(0, 3);
   const oEmbeds = await Promise.all(top3.map((s) => fetchOEmbed(s.twitterUsername, s.tweetId)));
+
+  const navBtn: React.CSSProperties = { background: '#eee', color: '#333', padding: '6px 14px', borderRadius: '4px', textDecoration: 'none' };
 
   return (
     <main className={styles.main}>
@@ -47,36 +63,51 @@ export default async function ShopPage({
           {summaries.length === 0 ? (
             <p style={{ color: '#666' }}>この店舗の直近14日間の情報はありません。</p>
           ) : (
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid #ccc', textAlign: 'left' }}>
-                  <th style={{ padding: '8px' }}>ツイート日時</th>
-                  <th style={{ padding: '8px' }}>価格</th>
-                  <th style={{ padding: '8px' }}>在庫数</th>
-                  <th style={{ padding: '8px' }}>ツイート</th>
-                </tr>
-              </thead>
-              <tbody>
-                {summaries.map((s) => (
-                  <tr key={s.postId} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '8px' }}>
-                      {tweetIdToDate(s.tweetId).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
-                    </td>
-                    <td style={{ padding: '8px' }}>
-                      {s.price !== undefined ? `¥${s.price.toLocaleString()}` : '—'}
-                    </td>
-                    <td style={{ padding: '8px' }}>
-                      {s.stockCount !== undefined ? s.stockCount : '—'}
-                    </td>
-                    <td style={{ padding: '8px' }}>
-                      <a href={`https://x.com/i/web/status/${s.tweetId}`} target="_blank" rel="noopener noreferrer">
-                        <Icon icon="ri:twitter-x-fill" width={16} height={16} />
-                      </a>
-                    </td>
+            <>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #ccc', textAlign: 'left' }}>
+                    <th style={{ padding: '8px' }}>ツイート日時</th>
+                    <th style={{ padding: '8px' }}>価格</th>
+                    <th style={{ padding: '8px' }}>在庫数</th>
+                    <th style={{ padding: '8px' }}>ツイート</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {pageItems.map((s) => (
+                    <tr key={s.postId} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '8px' }}>
+                        {tweetIdToDate(s.tweetId).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
+                      </td>
+                      <td style={{ padding: '8px' }}>
+                        {s.price !== undefined ? `¥${s.price.toLocaleString()}` : '—'}
+                      </td>
+                      <td style={{ padding: '8px' }}>
+                        {s.stockCount !== undefined ? s.stockCount : '—'}
+                      </td>
+                      <td style={{ padding: '8px' }}>
+                        <a href={`https://x.com/i/web/status/${s.tweetId}`} target="_blank" rel="noopener noreferrer">
+                          <Icon icon="ri:twitter-x-fill" width={16} height={16} />
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', marginTop: '16px' }}>
+                  {pageIndex > 1
+                    ? <a href={pageUrl(storeId, pageIndex - 1)} style={navBtn}>← 前へ</a>
+                    : <span style={{ ...navBtn, color: '#bbb', cursor: 'default' }}>← 前へ</span>
+                  }
+                  <span style={{ color: '#666', fontSize: '14px' }}>{pageIndex} / {totalPages} ページ</span>
+                  {pageIndex < totalPages
+                    ? <a href={pageUrl(storeId, pageIndex + 1)} style={navBtn}>次へ →</a>
+                    : <span style={{ ...navBtn, color: '#bbb', cursor: 'default' }}>次へ →</span>
+                  }
+                </div>
+              )}
+            </>
           )}
         </div>
 
