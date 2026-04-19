@@ -69,6 +69,7 @@ export async function getShopPosts(storeId: string): Promise<{
   summaries: OripaPostSummary[];
   storeName: string;
   twitterUsername: string;
+  area: string;
 }> {
   const client = DynamoDBDocumentClient.from(
     new DynamoDBClient({ region: process.env.AWS_REGION ?? "ap-northeast-1" }),
@@ -80,7 +81,7 @@ export async function getShopPosts(storeId: string): Promise<{
       client.send(new GetCommand({
         TableName: TABLE_NAMES.stores,
         Key: { storeId },
-        ProjectionExpression: "storeId, #n, twitterUsername",
+        ProjectionExpression: "storeId, #n, twitterUsername, area",
         ExpressionAttributeNames: { "#n": "name" },
       })),
     ]);
@@ -88,13 +89,14 @@ export async function getShopPosts(storeId: string): Promise<{
     const store = storeResult.Item as StoreItem | undefined;
     const storeName = store?.name ?? "";
     const twitterUsername = store?.twitterUsername ?? "";
+    const area = store?.area ?? "";
 
     const storeMap = new Map([[storeId, twitterUsername]]);
     const processed = capResults(deduplicateByPriceAndStock(sortNewestFirst(posts)), MAX_RESULTS);
-    return { summaries: mapToSummary(processed, storeMap), storeName, twitterUsername };
+    return { summaries: mapToSummary(processed, storeMap), storeName, twitterUsername, area };
   } catch (err) {
     console.error("[getShopPosts] DynamoDB query failed:", err);
-    return { summaries: [], storeName: "", twitterUsername: "" };
+    return { summaries: [], storeName: "", twitterUsername: "", area: "" };
   }
 }
 

@@ -21,6 +21,14 @@ export const dynamic = 'force-dynamic';
 const PAGE_SIZE = 20;
 const MAX_PAGES = 3;
 
+const AREA_LABELS: Record<string, string> = {
+  akihabara: '秋葉原',
+  omiya: '大宮',
+  kawagoe: '川越',
+  urawamisono: '浦和美園',
+  tokyo: '東京',
+};
+
 function pageUrl(storeId: string, p: number): string {
   return p > 1 ? `/oripa/shops/${storeId}?page=${p}` : `/oripa/shops/${storeId}`;
 }
@@ -38,7 +46,9 @@ export default async function ShopPage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const [{ storeId }, { page }] = await Promise.all([params, searchParams]);
-  const { summaries, storeName } = await getShopPosts(storeId);
+  const { summaries, storeName, area } = await getShopPosts(storeId);
+  const areaLabel = AREA_LABELS[area] ?? area;
+  const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(`${storeName} ${areaLabel}`)}&output=embed&hl=ja`;
 
   // Pagination
   const pageIndex = Math.min(Math.max(parseInt(page ?? '1') || 1, 1), MAX_PAGES);
@@ -58,6 +68,19 @@ export default async function ShopPage({
         <a href="/oripa" style={{ color: '#555', textDecoration: 'none' }}>← トップへ戻る</a>
       </p>
       <h1>{storeName || 'ショップ詳細'}</h1>
+      {storeName && (
+        <div style={{ marginBottom: '16px' }}>
+          <iframe
+            src={mapUrl}
+            width="100%"
+            height="300"
+            style={{ border: 0, borderRadius: '8px', display: 'block' }}
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
+      )}
       <div className={styles.contentLayout}>
         <div className={styles.tableColumn}>
           {summaries.length === 0 ? (
