@@ -16,5 +16,7 @@ export interface OripaPostSummary {
   stockCount?: number;
   /** Product name of the last-one prize (ラストワン賞), if present */
   lastOnePrizeName?: string;
+  /** List of hit card names (あたりカード), if present */
+  atariCards?: string[];
 }
 

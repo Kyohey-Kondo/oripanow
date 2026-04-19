@@ -10,6 +10,7 @@ export type OripaItem = {
   price?: number;
   stockCount?: number;
   lastOnePrizeName?: string;
+  atariCards?: string[];
 };
 
 export type AnalysisResult = {
@@ -58,6 +59,12 @@ const TOOL: Tool = {
                   type: 'string',
                   description:
                     "Product name of the last-one prize for this oripa tier, if mentioned in the tweet. Detect any of these patterns: 'ラストワン賞', 'ラスト1賞', 'ラス1賞', 'last one賞', 'last one prize', 'ラストワン', '最後の1口は〇〇', '最後の一口'. Extract the prize product name (e.g. 'ピカチュウex SAR', 'リザードンex'). Omit this field entirely if no last-one prize is mentioned.",
+                },
+                atariCards: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description:
+                    "List of hit card names (あたりカード) for this oripa tier. Detect any of these patterns: 'あたり', '当たり', '封入あたり', '封入当たり', '確定あたり', '確定当たり', '大当たり', '豪華あたり', '封入内容'. Extract each card name as a separate string (e.g. ['ピカチュウex SAR', 'リザードンex SAR']). If atari cards are shared across all tiers in the tweet, copy the full list to every tier's entry. Omit this field entirely if no atari cards are mentioned.",
                 },
               },
             },

@@ -43,6 +43,7 @@ export type OripaPostItem = {
   price?: number;
   stockCount?: number;
   lastOnePrizeName?: string; // Product name of the last-one prize (ラストワン賞), if present
+  atariCards?: string[];    // List of hit card names (あたりカード), if present
   saleAt: string;           // YYYY-MM-DD
   rawText: string;
   createdAt: string;        // ISO 8601

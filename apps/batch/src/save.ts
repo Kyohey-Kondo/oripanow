@@ -79,6 +79,7 @@ export async function saveOripaPost(
       price: tier.price,
       stockCount: tier.stockCount,
       ...(tier.lastOnePrizeName ? { lastOnePrizeName: tier.lastOnePrizeName } : {}),
+      ...(tier.atariCards && tier.atariCards.length > 0 ? { atariCards: tier.atariCards } : {}),
       saleAt,
       rawText: tweet.content,
       createdAt: now,

@@ -88,6 +88,7 @@ export default async function HomePage({
                     <th style={{ padding: '8px' }}>価格</th>
                     <th style={{ padding: '8px' }}>在庫数</th>
                     <th style={{ padding: '8px' }}>ラストワン賞</th>
+                    <th style={{ padding: '8px' }}>あたり</th>
                     <th style={{ padding: '8px' }}>ツイート</th>
                   </tr>
                 </thead>
@@ -110,6 +111,13 @@ export default async function HomePage({
                       </td>
                       <td style={{ padding: '8px', color: '#b45309', fontSize: '0.85em' }}>
                         {s.lastOnePrizeName ?? '—'}
+                      </td>
+                      <td style={{ padding: '8px', fontSize: '0.85em' }}>
+                        {s.atariCards && s.atariCards.length > 0
+                          ? s.atariCards.length <= 3
+                            ? s.atariCards.join(' / ')
+                            : s.atariCards.slice(0, 3).join(' / ') + ` … (+${s.atariCards.length - 3})`
+                          : '—'}
                       </td>
                       <td style={{ padding: '8px' }}>
                         <a href={`https://x.com/i/web/status/${s.tweetId}`} target="_blank" rel="noopener noreferrer">
