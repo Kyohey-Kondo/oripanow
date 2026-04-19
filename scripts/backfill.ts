@@ -1,21 +1,32 @@
 /**
  * Backfill script: fetch up to 7 days of real tweets for all active stores.
  *
- * Usage:
+ * Usage (all stores — full reset):
  *   TWITTER_BEARER_TOKEN=<token> AWS_REGION=ap-northeast-1 \
  *     pnpm --filter @oripa-now/scripts exec tsx backfill.ts
+ *
+ * Usage (CSV filter — new stores only, no cleanup):
+ *   DEPLOY_ENV=prod \
+ *     pnpm --filter @oripa-now/scripts exec tsx backfill.ts data/additional-stores.csv
  *
  * Or load token from SSM automatically (requires aws CLI credentials):
  *   AWS_REGION=ap-northeast-1 pnpm --filter @oripa-now/scripts exec tsx backfill.ts
  *
- * What it does:
+ * What it does (full mode):
  *   1. Deletes dummy tweets (tweetId starting with "tw-")
  *   2. Deletes oripa-posts linked to those dummy tweets
  *   3. Clears lastFetchedTweetId for all stores
  *   4. Fetches tweets from the past 7 days (max 100/store, paginated)
  *   5. Saves as UNPROCESSED — ready for the analyze Lambda
+ *
+ * What it does (CSV filter mode):
+ *   1. Reads twitterUsername list from the CSV
+ *   2. Fetches tweets only for those stores (skips cleanup and reset)
+ *   3. Saves as UNPROCESSED — ready for the analyze Lambda
  */
 
+import { readFileSync } from 'node:fs';
+import { parse } from 'csv-parse/sync';
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import {
@@ -136,10 +147,23 @@ async function fetchAllTweetsForStore(
   return tweets;
 }
 
+// ─── CSV filter ───────────────────────────────────────────────────────────────
+
+function readUsernamesFromCsv(csvPath: string): Set<string> {
+  const content = readFileSync(csvPath, 'utf-8');
+  const rows = parse(content, { columns: true, skip_empty_lines: true, trim: true }) as Array<{
+    twitterUsername: string;
+  }>;
+  return new Set(rows.map((r) => r.twitterUsername));
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log('=== Backfill start ===');
+  const csvPath = process.argv[2];
+  const filterMode = !!csvPath;
+
+  console.log(`=== Backfill start (${filterMode ? `CSV filter: ${csvPath}` : 'all stores'}) ===`);
 
   // 1. Get active stores
   const storesResult = await docClient.send(
@@ -149,32 +173,42 @@ async function main() {
       ExpressionAttributeValues: { ':true': true },
     }),
   );
-  const stores = (storesResult.Items ?? []) as StoreItem[];
+  let stores = (storesResult.Items ?? []) as StoreItem[];
+
+  if (filterMode) {
+    const usernames = readUsernamesFromCsv(csvPath);
+    stores = stores.filter((s) => usernames.has(s.twitterUsername));
+    console.log(`Filtered to ${stores.length} store(s) from CSV`);
+  }
+
   console.log(`Stores: ${stores.map((s) => s.twitterUsername).join(', ')}`);
 
-  // 2. Delete dummy data
-  const dummyTweets = await docClient.send(
-    new ScanCommand({
-      TableName: TABLE_NAMES.tweets,
-      FilterExpression: 'begins_with(tweetId, :prefix)',
-      ExpressionAttributeValues: { ':prefix': 'tw-' },
-      ProjectionExpression: 'id, tweetId',
-    }),
-  );
-  const dummyTweetIds = (dummyTweets.Items ?? []).map((i) => i['tweetId'] as string);
+  if (!filterMode) {
+    // 2. Delete dummy data
+    const dummyTweets = await docClient.send(
+      new ScanCommand({
+        TableName: TABLE_NAMES.tweets,
+        FilterExpression: 'begins_with(tweetId, :prefix)',
+        ExpressionAttributeValues: { ':prefix': 'tw-' },
+        ProjectionExpression: 'id, tweetId',
+      }),
+    );
+    const dummyTweetIds = (dummyTweets.Items ?? []).map((i) => i['tweetId'] as string);
 
-  const deletedTweets = await deleteDummyTweets();
-  const deletedPosts = await deleteDummyOripaPostsByTweetIds(dummyTweetIds);
-  console.log(`Deleted: ${deletedTweets} dummy tweets, ${deletedPosts} dummy oripa-posts`);
+    const deletedTweets = await deleteDummyTweets();
+    const deletedPosts = await deleteDummyOripaPostsByTweetIds(dummyTweetIds);
+    console.log(`Deleted: ${deletedTweets} dummy tweets, ${deletedPosts} dummy oripa-posts`);
 
-  // 3. Clear lastFetchedTweetId
-  await clearLastFetchedTweetIds(stores);
-  console.log('Cleared lastFetchedTweetId for all stores');
+    // 3. Clear lastFetchedTweetId
+    await clearLastFetchedTweetIds(stores);
+    console.log('Cleared lastFetchedTweetId for all stores');
+  }
 
   // 4. Fetch & save
   const token = await getTwitterToken();
   const twitterClient = new TwitterApi(token);
 
+  const deployEnv = process.env.DEPLOY_ENV ?? 'dev';
   let totalWritten = 0;
   const errors: Array<{ username: string; error: string }> = [];
 
@@ -207,7 +241,7 @@ async function main() {
     for (const e of errors) console.log(`  ${e.username}: ${e.error}`);
   }
   console.log(`\nNext: invoke the analyze Lambda to process these tweets:`);
-  console.log(`  aws lambda invoke --function-name dev-oripa-now-analyze --payload '{}' /tmp/analyze-out.json && cat /tmp/analyze-out.json`);
+  console.log(`  aws lambda invoke --function-name ${deployEnv}-oripa-now-analyze --payload '{}' /tmp/analyze-out.json && cat /tmp/analyze-out.json`);
 }
 
 main().catch((err) => {

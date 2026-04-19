@@ -77,10 +77,11 @@ name,twitterUsername,area,address
 
 ---
 
-## backfill.ts — Backfill tweets for all active stores
+## backfill.ts — Backfill tweets for active stores
 
-Cleans up dummy data, then fetches up to 7 days of real tweets from Twitter API.
-Run this after registering stores for the first time.
+Fetches up to 7 days of real tweets from Twitter API and saves them as UNPROCESSED.
+
+### Full mode (all stores — cleans up dummy data first)
 
 ```bash
 # Token from SSM (recommended)
@@ -92,7 +93,24 @@ TWITTER_BEARER_TOKEN=<token> DEPLOY_ENV=prod \
   pnpm --filter @oripa-now/scripts exec tsx backfill.ts
 ```
 
-After backfill, invoke the analyze Lambda to process the fetched tweets:
+What full mode does:
+1. Deletes dummy tweets (tweetId starting with `tw-`) and linked oripa-posts
+2. Clears `lastFetchedTweetId` for all stores
+3. Fetches tweets for all active stores
+
+### CSV filter mode (new stores only — no cleanup, no reset)
+
+Pass a CSV file (same format as `add-store.ts`) to backfill only the stores listed in it.
+Use this after adding new stores so that existing store data is not affected.
+
+```bash
+DEPLOY_ENV=prod \
+  pnpm --filter @oripa-now/scripts exec tsx backfill.ts data/additional-stores.csv
+```
+
+### After backfill
+
+Invoke the analyze Lambda to process the fetched tweets:
 
 ```bash
 aws lambda invoke \
@@ -119,14 +137,29 @@ SKIP_FETCH=1 DEPLOY_ENV=prod \
 
 ---
 
-## Typical first-time setup flow
+## Typical flows
+
+### First-time setup (all stores)
 
 ```bash
 # 1. Register stores
 DEPLOY_ENV=prod pnpm --filter @oripa-now/scripts exec tsx add-store.ts data/additional-stores.csv
 
-# 2. Backfill tweets (past 7 days)
+# 2. Backfill tweets (past 7 days, all stores)
 DEPLOY_ENV=prod pnpm --filter @oripa-now/scripts exec tsx backfill.ts
+
+# 3. Analyze tweets (invoke Lambda)
+aws lambda invoke --function-name prod-oripa-now-analyze --payload '{}' /tmp/out.json && cat /tmp/out.json
+```
+
+### Adding new stores to an existing environment
+
+```bash
+# 1. Register new stores from CSV
+DEPLOY_ENV=prod pnpm --filter @oripa-now/scripts exec tsx add-store.ts data/additional-stores.csv
+
+# 2. Backfill tweets for new stores only (existing data untouched)
+DEPLOY_ENV=prod pnpm --filter @oripa-now/scripts exec tsx backfill.ts data/additional-stores.csv
 
 # 3. Analyze tweets (invoke Lambda)
 aws lambda invoke --function-name prod-oripa-now-analyze --payload '{}' /tmp/out.json && cat /tmp/out.json

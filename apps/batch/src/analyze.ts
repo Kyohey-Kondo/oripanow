@@ -51,6 +51,7 @@ async function getUnprocessedTweets(): Promise<TweetItem[]> {
       IndexName: GSI.unprocessedTweets,
       KeyConditionExpression: 'processStatus = :status',
       ExpressionAttributeValues: { ':status': 'UNPROCESSED' },
+      ScanIndexForward: false,
       Limit: ANALYZE_BATCH_SIZE,
     }),
   );
