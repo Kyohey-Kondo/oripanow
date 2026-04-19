@@ -1,6 +1,6 @@
 # oripanow Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-18
+Auto-generated from all feature plans. Last updated: 2026-04-19
 
 ## Active Technologies
 - TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, AWS SDK v3 (DynamoDB DocumentClient)
@@ -19,6 +19,7 @@ Auto-generated from all feature plans. Last updated: 2026-04-18
 - DynamoDB — `oripa-posts` table via GSI2 (`storeId → createdAt`), `stores` table via GetItem (010-shop-detail-page)
 - TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`, `searchParams`) (011-top-page-pagination)
 - No DynamoDB changes — existing `getTodayOnSalePosts` extended to 60 items (011-top-page-pagination)
+- DynamoDB — `stores` table (read only, no schema change) (014-shop-google-map)
 
 ## Project Structure
 
@@ -64,6 +65,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 014-shop-google-map: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`), `@aws-sdk/lib-dynamodb`
 - 011-top-page-pagination: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`, `searchParams`)
 - 010-shop-detail-page: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`), `@aws-sdk/lib-dynamodb`, `@oripa-now/db`, `@oripa-now/types`
-- 009-responsive-layout: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
