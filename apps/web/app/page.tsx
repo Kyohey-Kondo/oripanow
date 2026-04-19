@@ -67,10 +67,7 @@ export default async function HomePage({
 
   return (
     <main className={styles.main}>
-      <h1>Oripa Sale Information</h1>
-      <p style={{ color: '#666', marginBottom: '12px' }}>
-        Most recent available info per store — sorted by newest sale date
-      </p>
+      <h1>オリパ最新情報</h1>
       <div className={styles.contentLayout}>
         <div className={styles.tableColumn}>
           <nav style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -90,6 +87,7 @@ export default async function HomePage({
                     <th style={{ padding: '8px' }}>ツイート日時</th>
                     <th style={{ padding: '8px' }}>価格</th>
                     <th style={{ padding: '8px' }}>在庫数</th>
+                    <th style={{ padding: '8px' }}>ラストワン賞</th>
                     <th style={{ padding: '8px' }}>ツイート</th>
                   </tr>
                 </thead>
@@ -109,6 +107,9 @@ export default async function HomePage({
                       </td>
                       <td style={{ padding: '8px' }}>
                         {s.stockCount !== undefined ? s.stockCount : '—'}
+                      </td>
+                      <td style={{ padding: '8px', color: '#b45309', fontSize: '0.85em' }}>
+                        {s.lastOnePrizeName ?? '—'}
                       </td>
                       <td style={{ padding: '8px' }}>
                         <a href={`https://x.com/i/web/status/${s.tweetId}`} target="_blank" rel="noopener noreferrer">

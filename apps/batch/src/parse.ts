@@ -9,6 +9,7 @@ import type { TweetItem } from '@oripa-now/db';
 export type OripaItem = {
   price?: number;
   stockCount?: number;
+  lastOnePrizeName?: string;
 };
 
 export type AnalysisResult = {
@@ -52,6 +53,11 @@ const TOOL: Tool = {
                 stockCount: {
                   type: 'integer',
                   description: 'Number of packs available for this tier. Omit if not mentioned.',
+                },
+                lastOnePrizeName: {
+                  type: 'string',
+                  description:
+                    "Product name of the last-one prize for this oripa tier, if mentioned in the tweet. Detect any of these patterns: 'ラストワン賞', 'ラスト1賞', 'ラス1賞', 'last one賞', 'last one prize', 'ラストワン', '最後の1口は〇〇', '最後の一口'. Extract the prize product name (e.g. 'ピカチュウex SAR', 'リザードンex'). Omit this field entirely if no last-one prize is mentioned.",
                 },
               },
             },

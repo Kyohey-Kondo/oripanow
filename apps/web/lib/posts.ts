@@ -54,6 +54,7 @@ export function mapToSummary(
     tweetId: p.tweetId,
     ...(p.price !== undefined && { price: p.price }),
     ...(p.stockCount !== undefined && { stockCount: p.stockCount }),
+    ...(p.lastOnePrizeName !== undefined && { lastOnePrizeName: p.lastOnePrizeName }),
   }));
 }
 

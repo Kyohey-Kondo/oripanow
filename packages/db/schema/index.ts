@@ -42,6 +42,7 @@ export type OripaPostItem = {
   status: "on_sale" | "sold_out" | "upcoming";
   price?: number;
   stockCount?: number;
+  lastOnePrizeName?: string; // Product name of the last-one prize (ラストワン賞), if present
   saleAt: string;           // YYYY-MM-DD
   rawText: string;
   createdAt: string;        // ISO 8601

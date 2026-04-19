@@ -78,6 +78,7 @@ export async function saveOripaPost(
       status: result.status as OripaPostItem['status'],
       price: tier.price,
       stockCount: tier.stockCount,
+      ...(tier.lastOnePrizeName ? { lastOnePrizeName: tier.lastOnePrizeName } : {}),
       saleAt,
       rawText: tweet.content,
       createdAt: now,

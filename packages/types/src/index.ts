@@ -14,5 +14,7 @@ export interface OripaPostSummary {
   price?: number;
   /** Stock count, if known */
   stockCount?: number;
+  /** Product name of the last-one prize (ラストワン賞), if present */
+  lastOnePrizeName?: string;
 }
 
