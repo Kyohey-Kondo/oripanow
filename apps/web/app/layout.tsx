@@ -11,13 +11,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   return (
     <html lang="ja">
       <body style={{ fontFamily: 'sans-serif', margin: 0, overflowX: 'hidden' }}>
         {children}
       </body>
-      {gaId && <GoogleAnalytics gaId={gaId} />}
+      <GoogleAnalytics gaId="G-5RNYDB76T7" />
     </html>
   );
 }
