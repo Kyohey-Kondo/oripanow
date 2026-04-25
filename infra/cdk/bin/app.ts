@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+dotenv.config({ path: path.join(__dirname, '../.env') });
+
 import * as cdk from 'aws-cdk-lib';
 import { BatchStack } from '../lib/batch-stack';
 import { WebStack } from '../lib/web-stack';

@@ -13,6 +13,8 @@ cdk.out/
 .env
 .env.*
 !.env.example
+!**/.env.example
+!.env.production
 
 # Logs
 *.log

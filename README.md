@@ -42,6 +42,36 @@ pnpm --filter @oripa-now/web dev
 pnpm --filter @oripa-now/batch build
 ```
 
+## 環境変数
+
+環境変数ファイルはすべて `.gitignore` 対象です。初回セットアップ時に example からコピーして値を設定してください。
+
+### フロントエンド (`apps/web`)
+
+```bash
+cp apps/web/.env.local.example apps/web/.env.local
+```
+
+| 変数 | 説明 |
+|---|---|
+| `NEXT_PUBLIC_GA_ID` | Google Analytics 4 測定 ID（例: `G-XXXXXXXXXX`） |
+
+> `NEXT_PUBLIC_GA_ID` はビルド時に JS バンドルへ埋め込まれます。`NODE_ENV=production`（`next build`）のときのみ有効なため、ローカル開発中は GA にデータが送信されません。
+
+### CDK (`infra/cdk`)
+
+```bash
+cp infra/cdk/.env.example infra/cdk/.env
+```
+
+| 変数 | 説明 |
+|---|---|
+| `DEPLOY_ENV` | デプロイ環境プレフィックス（例: `dev`） |
+| `DOMAIN_NAME` | CloudFront カスタムドメイン（例: `oripanow.app`） |
+| `CERTIFICATE_ARN` | カスタムドメイン用 ACM 証明書 ARN（`us-east-1` のもの） |
+
+> `infra/cdk/.env` が未設定のままデプロイすると、CloudFront からカスタムドメイン・証明書の設定が消えるので必ず設定してください。
+
 ## デプロイ手順
 
 ### 1. ビルド
@@ -54,12 +84,10 @@ pnpm --filter @oripa-now/web build
 ### 2. CDK デプロイ
 
 ```bash
-# 両スタックをまとめてデプロイ
-pnpm --filter @oripa-now/infra run deploy
-
-# 特定スタックのみ
-pnpm --filter @oripa-now/infra run deploy -- dev-batch-stack
-pnpm --filter @oripa-now/infra run deploy -- dev-web-stack
+# 特定スタックのみ（infra/cdk/.env の設定が必要）
+cd infra/cdk
+pnpm run deploy dev-batch-stack
+pnpm run deploy dev-web-stack
 ```
 
 デプロイ完了後、CloudFront の URL が出力されます：
