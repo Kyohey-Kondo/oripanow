@@ -1,0 +1,71 @@
+.container {
+  max-width: 800px;
+  margin: 40px auto;
+  background: #fff;
+  padding: 48px 56px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #333;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #111;
+}
+
+.updated {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 40px;
+}
+
+.intro {
+  margin-bottom: 12px;
+  color: #444;
+}
+
+.section {
+  font-size: 17px;
+  font-weight: bold;
+  margin: 36px 0 12px;
+  padding-left: 12px;
+  border-left: 4px solid #4f8ef7;
+  color: #111;
+}
+
+.text {
+  margin-bottom: 12px;
+  color: #444;
+}
+
+.list {
+  padding-left: 24px;
+  margin-bottom: 12px;
+}
+
+.list li {
+  margin-bottom: 6px;
+  color: #444;
+}
+
+.footerNote {
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
+  font-size: 13px;
+  color: #888;
+  text-align: right;
+}
+
+@media (max-width: 600px) {
+  .container {
+    margin: 0;
+    padding: 32px 24px;
+    border-radius: 0;
+  }
+}
