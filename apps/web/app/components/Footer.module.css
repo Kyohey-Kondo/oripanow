@@ -17,10 +17,6 @@
   text-align: center;
 }
 
-.disclaimer {
-  line-height: 1.6;
-}
-
 .links {
   display: flex;
   gap: 16px;

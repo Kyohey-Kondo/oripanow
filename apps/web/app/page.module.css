@@ -54,6 +54,7 @@
   .tweetList {
     flex-direction: row;
     flex-wrap: nowrap;
+    align-items: center;
     gap: 16px;
     padding-right: 16px;
   }

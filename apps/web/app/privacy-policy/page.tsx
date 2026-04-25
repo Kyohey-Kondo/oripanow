@@ -71,6 +71,17 @@ export default function PrivacyPolicyPage() {
           本ポリシーに関するお問い合わせは、本サービス内のお問い合わせフォームよりご連絡ください。
         </p>
 
+        <h2 className={styles.section}>10. 免責事項</h2>
+        <p className={styles.text}>
+          本サービスに掲載しているオリパの情報（価格・封入率・ラインナップ等）は、可能な限り正確な情報を提供するよう努めておりますが、その正確性・完全性・最新性を保証するものではありません。
+        </p>
+        <p className={styles.text}>
+          本サービス内のリンクを経由して遷移した外部サイトのコンテンツ・サービス・取引について、運営者は一切の責任を負いません。外部サイトのご利用は利用者自身の判断と責任において行ってください。
+        </p>
+        <p className={styles.text}>
+          本サービスの利用により利用者に生じた損害について、運営者は一切の責任を負わないものとします。
+        </p>
+
         <div className={styles.footerNote}>運営者：tacos／オリパなう</div>
       </div>
     </div>

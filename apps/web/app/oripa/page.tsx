@@ -1,4 +1,6 @@
+import React from 'react';
 import Script from 'next/script';
+import { AdBanner } from '../components/AdBanner';
 import { Icon } from '@iconify/react';
 import { getTodayOnSalePosts } from '../../lib/posts';
 import styles from '../page.module.css';
@@ -150,10 +152,21 @@ export default async function HomePage({
             <div className={styles.tweetList}>
               {oEmbeds.map((html, i) =>
                 html ? (
-                  <div key={top3[i].tweetId}
-                    style={{ zoom: 0.75 }}
-                    dangerouslySetInnerHTML={{ __html: html }}
-                  />
+                  <React.Fragment key={top3[i].tweetId}>
+                    <div
+                      style={{ zoom: 0.75 }}
+                      dangerouslySetInnerHTML={{ __html: html }}
+                    />
+                    {i === 0 && (
+                      <AdBanner
+                        key="ad"
+                        href="https://px.a8.net/svt/ejp?a8mat=4B1THW+97114I+5G0Y+5Z6WX"
+                        imgSrc="https://www21.a8.net/svt/bgt?aid=260425364556&wid=001&eno=01&mid=s00000025405001004000&mc=1"
+                        trackingSrc="https://www13.a8.net/0.gif?a8mat=4B1THW+97114I+5G0Y+5Z6WX"
+                        style={{ margin: '8px 0' }}
+                      />
+                    )}
+                  </React.Fragment>
                 ) : null
               )}
             </div>
