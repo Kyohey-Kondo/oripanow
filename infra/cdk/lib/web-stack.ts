@@ -93,7 +93,7 @@ export class WebStack extends cdk.Stack {
     }));
 
     const fnUrl = nextjsFn.addFunctionUrl({
-      authType: lambda.FunctionUrlAuthType.NONE,
+      authType: lambda.FunctionUrlAuthType.AWS_IAM,
     });
 
     // ACM certificate (must be in us-east-1 for CloudFront)
@@ -106,7 +106,7 @@ export class WebStack extends cdk.Stack {
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
       ...(certificate && domainName ? { domainNames: [domainName], certificate } : {}),
       defaultBehavior: {
-        origin: new origins.FunctionUrlOrigin(fnUrl),
+        origin: origins.FunctionUrlOrigin.withOriginAccessControl(fnUrl),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
         originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
@@ -131,6 +131,13 @@ export class WebStack extends cdk.Stack {
       destinationKeyPrefix: '_next/static',
       distribution,
       distributionPaths: ['/_next/static/*'],
+    });
+
+    // CloudFront OAC requires both InvokeFunctionUrl and InvokeFunction permissions
+    nextjsFn.addPermission('AllowCloudFrontInvokeFunction', {
+      principal: new iam.ServicePrincipal('cloudfront.amazonaws.com'),
+      action: 'lambda:InvokeFunction',
+      sourceArn: `arn:aws:cloudfront::${this.account}:distribution/${distribution.distributionId}`,
     });
 
     // Outputs

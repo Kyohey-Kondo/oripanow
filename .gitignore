@@ -43,3 +43,4 @@ scripts/data/*
 
 # Playwright MCP artifacts
 .playwright-mcp/
+e2e-*.png
