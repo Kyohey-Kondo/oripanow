@@ -1,0 +1,40 @@
+.footer {
+  margin-top: 48px;
+  border-top: 1px solid #e5e5e5;
+  background: #f9f9f9;
+  padding: 24px 32px;
+  font-size: 13px;
+  color: #888;
+}
+
+.inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  text-align: center;
+}
+
+.disclaimer {
+  line-height: 1.6;
+}
+
+.links {
+  display: flex;
+  gap: 16px;
+}
+
+.links a {
+  color: #666;
+  text-decoration: none;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
+
+.copyright {
+  color: #aaa;
+}

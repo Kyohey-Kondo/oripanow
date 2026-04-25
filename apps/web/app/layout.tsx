@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { GoogleAnalytics } from '@next/third-parties/google';
+import { Footer } from './components/Footer';
 
 export const metadata: Metadata = {
   title: 'Oripa Now',
@@ -17,6 +18,7 @@ export default function RootLayout({
     <html lang="ja">
       <body style={{ fontFamily: 'sans-serif', margin: 0, overflowX: 'hidden' }}>
         {children}
+        <Footer />
       </body>
       {gaId && process.env.NODE_ENV === 'production' && <GoogleAnalytics gaId={gaId} />}
     </html>
