@@ -1,3 +1,4 @@
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 import * as cdk from 'aws-cdk-lib';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
@@ -11,13 +12,15 @@ import { Construct } from 'constructs';
 
 interface WebStackProps extends cdk.StackProps {
   deployEnv: string;
+  domainName?: string;
+  certificateArn?: string;
 }
 
 export class WebStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: WebStackProps) {
     super(scope, id, props);
 
-    const { deployEnv } = props;
+    const { deployEnv, domainName, certificateArn } = props;
 
     // DynamoDB: batch-stack が作成した oripa-posts テーブル（読み取り専用）
     const oripaPostsTableName = `${deployEnv}-oripa-posts`;
@@ -93,8 +96,15 @@ export class WebStack extends cdk.Stack {
       authType: lambda.FunctionUrlAuthType.NONE,
     });
 
+    // ACM certificate (must be in us-east-1 for CloudFront)
+    const certificate =
+      certificateArn
+        ? acm.Certificate.fromCertificateArn(this, 'Certificate', certificateArn)
+        : undefined;
+
     // CloudFront: CDN + HTTPS
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
+      ...(certificate && domainName ? { domainNames: [domainName], certificate } : {}),
       defaultBehavior: {
         origin: new origins.FunctionUrlOrigin(fnUrl),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,

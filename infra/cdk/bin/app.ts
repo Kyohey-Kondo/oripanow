@@ -17,6 +17,8 @@ new BatchStack(app, `${deployEnv}-batch-stack`, {
 
 new WebStack(app, `${deployEnv}-web-stack`, {
   deployEnv,
+  domainName: process.env.DOMAIN_NAME,
+  certificateArn: process.env.CERTIFICATE_ARN,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION ?? 'ap-northeast-1',
