@@ -1,0 +1,172 @@
+<mxfile host="app.diagrams.net" version="24.0.0">
+  <diagram name="oripanow-architecture" id="arch-001">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ===== Labels ===== -->
+
+        <!-- User -->
+        <mxCell id="user" value="User" style="shape=mxgraph.aws4.user;fillColor=#232F3E;fontColor=#ffffff;strokeColor=none;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="220" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- CloudFront -->
+        <mxCell id="cf" value="CloudFront" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudfront;fillColor=#8C4FFF;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="240" y="220" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda Next.js -->
+        <mxCell id="lambda-web" value="Lambda&#xa;(Next.js SSR)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;fillColor=#E7157B;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="460" y="160" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- S3 -->
+        <mxCell id="s3" value="S3&#xa;(Static Assets)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;fillColor=#277116;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="460" y="300" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- DynamoDB oripa-posts -->
+        <mxCell id="ddb-posts" value="DynamoDB&#xa;oripa-posts" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.dynamodb;fillColor=#2E73B8;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="680" y="120" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- DynamoDB stores -->
+        <mxCell id="ddb-stores" value="DynamoDB&#xa;stores" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.dynamodb;fillColor=#2E73B8;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="680" y="240" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- DynamoDB tweets -->
+        <mxCell id="ddb-tweets" value="DynamoDB&#xa;tweets" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.dynamodb;fillColor=#2E73B8;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="680" y="600" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- EventBridge batch -->
+        <mxCell id="eb-batch" value="EventBridge&#xa;(00:00 UTC)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.eventbridge;fillColor=#E7157B;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="580" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- EventBridge analyze -->
+        <mxCell id="eb-analyze" value="EventBridge&#xa;(00:10 UTC)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.eventbridge;fillColor=#E7157B;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="60" y="720" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda batch -->
+        <mxCell id="lambda-batch" value="Lambda&#xa;(batch)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;fillColor=#E7157B;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="240" y="580" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda analyze -->
+        <mxCell id="lambda-analyze" value="Lambda&#xa;(analyze)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.lambda;fillColor=#E7157B;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="240" y="720" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Twitter API -->
+        <mxCell id="twitter" value="Twitter API v2" style="rounded=1;whiteSpace=wrap;fillColor=#1DA1F2;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="460" y="590" width="130" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Bedrock -->
+        <mxCell id="bedrock" value="Amazon Bedrock&#xa;(Claude Haiku)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.bedrock;fillColor=#8C4FFF;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="460" y="710" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- SSM -->
+        <mxCell id="ssm" value="SSM&#xa;Parameter Store" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.systems_manager_parameter_store;fillColor=#E7157B;strokeColor=none;fontColor=#ffffff;fontSize=13;fontStyle=1;labelPosition=bottom;verticalLabelPosition=top;verticalAlign=bottom;align=center;" vertex="1" parent="1">
+          <mxGeometry x="240" y="460" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ===== Group borders ===== -->
+
+        <!-- AWS boundary -->
+        <mxCell id="aws-box" value="AWS" style="swimlane;startSize=24;fillColor=none;strokeColor=#FF9900;strokeWidth=2;fontColor=#FF9900;fontSize=14;fontStyle=1;align=left;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="180" y="80" width="620" height="760" as="geometry" />
+        </mxCell>
+
+        <!-- Web layer group -->
+        <mxCell id="web-box" value="Web Layer" style="swimlane;startSize=20;fillColor=#f5f5f5;strokeColor=#aaaaaa;fontColor=#333333;fontSize=12;align=left;" vertex="1" parent="1">
+          <mxGeometry x="200" y="110" width="420" height="310" as="geometry" />
+        </mxCell>
+
+        <!-- Batch layer group -->
+        <mxCell id="batch-box" value="Batch Layer (daily)" style="swimlane;startSize=20;fillColor=#f5f5f5;strokeColor=#aaaaaa;fontColor=#333333;fontSize=12;align=left;" vertex="1" parent="1">
+          <mxGeometry x="200" y="530" width="420" height="280" as="geometry" />
+        </mxCell>
+
+        <!-- ===== Edges ===== -->
+
+        <!-- User → CloudFront -->
+        <mxCell id="e1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="user" target="cf" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CloudFront → Lambda web -->
+        <mxCell id="e2" value="dynamic" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="cf" target="lambda-web" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- CloudFront → S3 -->
+        <mxCell id="e3" value="/_next/static/*" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="cf" target="s3" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda web → DynamoDB oripa-posts -->
+        <mxCell id="e4" value="read" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="lambda-web" target="ddb-posts" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda web → DynamoDB stores -->
+        <mxCell id="e5" value="read" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="lambda-web" target="ddb-stores" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- EventBridge → Lambda batch -->
+        <mxCell id="e6" value="" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;" edge="1" source="eb-batch" target="lambda-batch" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- EventBridge → Lambda analyze -->
+        <mxCell id="e7" value="" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;" edge="1" source="eb-analyze" target="lambda-analyze" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda batch → Twitter -->
+        <mxCell id="e8" value="fetch tweets" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="lambda-batch" target="twitter" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda batch → DynamoDB tweets -->
+        <mxCell id="e9" value="write" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="lambda-batch" target="ddb-tweets" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda batch → DynamoDB stores -->
+        <mxCell id="e10" value="read/write" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="lambda-batch" target="ddb-stores" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda analyze → Bedrock -->
+        <mxCell id="e11" value="invoke" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="lambda-analyze" target="bedrock" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda analyze → DynamoDB tweets -->
+        <mxCell id="e12" value="read/update" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="lambda-analyze" target="ddb-tweets" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda analyze → DynamoDB oripa-posts -->
+        <mxCell id="e13" value="write" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="lambda-analyze" target="ddb-posts" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Lambda batch → SSM -->
+        <mxCell id="e14" value="get secret" style="edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontColor=#555555;fontSize=11;" edge="1" source="lambda-batch" target="ssm" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
