@@ -12,13 +12,14 @@ import { Construct } from 'constructs';
 
 interface BatchStackProps extends cdk.StackProps {
   deployEnv: string;
+  cloudFrontDistributionId?: string;
 }
 
 export class BatchStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BatchStackProps) {
     super(scope, id, props);
 
-    const { deployEnv } = props;
+    const { deployEnv, cloudFrontDistributionId } = props;
 
     // ─── DynamoDB: stores ────────────────────────────────────────────────────
     // PK: storeId (ULID)
@@ -141,6 +142,7 @@ export class BatchStack extends cdk.Stack {
         TWEETS_TABLE_NAME: tweetsTable.tableName,
         ANTHROPIC_MODEL: 'jp.anthropic.claude-haiku-4-5-20251001-v1:0',
         ANALYZE_BATCH_SIZE: '50',
+        ...(cloudFrontDistributionId ? { CLOUDFRONT_DISTRIBUTION_ID: cloudFrontDistributionId } : {}),
       },
       logGroup: new logs.LogGroup(this, 'AnalyzeLogGroup', {
         logGroupName: `/aws/lambda/${deployEnv}-oripa-now-analyze`,
@@ -157,6 +159,18 @@ export class BatchStack extends cdk.Stack {
     storesTable.grantReadData(analyzeFn);
     oripaPostsTable.grantReadWriteData(analyzeFn);
     tweetsTable.grantReadWriteData(analyzeFn);
+
+    // CloudFront: IAM permission to create invalidations (only when distribution ID is provided)
+    if (cloudFrontDistributionId) {
+      analyzeFn.addToRolePolicy(
+        new iam.PolicyStatement({
+          actions: ['cloudfront:CreateInvalidation'],
+          resources: [
+            `arn:aws:cloudfront::${this.account}:distribution/${cloudFrontDistributionId}`,
+          ],
+        }),
+      );
+    }
 
     // Bedrock: IAM permission to invoke Claude models
     analyzeFn.addToRolePolicy(

@@ -17,6 +17,8 @@ interface WebStackProps extends cdk.StackProps {
 }
 
 export class WebStack extends cdk.Stack {
+  readonly distribution: cloudfront.Distribution;
+
   constructor(scope: Construct, id: string, props: WebStackProps) {
     super(scope, id, props);
 
@@ -102,13 +104,26 @@ export class WebStack extends cdk.Stack {
         ? acm.Certificate.fromCertificateArn(this, 'Certificate', certificateArn)
         : undefined;
 
+    // CloudFront: custom cache policy for SSR pages (24h TTL, keyed on area + page)
+    const ssrCachePolicy = new cloudfront.CachePolicy(this, 'SsrCachePolicy', {
+      cachePolicyName: `${deployEnv}-ssr-cache`,
+      defaultTtl: cdk.Duration.hours(24),
+      minTtl: cdk.Duration.hours(24),
+      maxTtl: cdk.Duration.hours(24),
+      queryStringBehavior: cloudfront.CacheQueryStringBehavior.allowList('area', 'page'),
+      headerBehavior: cloudfront.CacheHeaderBehavior.none(),
+      cookieBehavior: cloudfront.CacheCookieBehavior.none(),
+      enableAcceptEncodingGzip: true,
+      enableAcceptEncodingBrotli: true,
+    });
+
     // CloudFront: CDN + HTTPS
-    const distribution = new cloudfront.Distribution(this, 'Distribution', {
+    this.distribution = new cloudfront.Distribution(this, 'Distribution', {
       ...(certificate && domainName ? { domainNames: [domainName], certificate } : {}),
       defaultBehavior: {
         origin: origins.FunctionUrlOrigin.withOriginAccessControl(fnUrl),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+        cachePolicy: ssrCachePolicy,
         originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
       },
       additionalBehaviors: {
@@ -129,7 +144,7 @@ export class WebStack extends cdk.Stack {
       ],
       destinationBucket: assetBucket,
       destinationKeyPrefix: '_next/static',
-      distribution,
+      distribution: this.distribution,
       distributionPaths: ['/_next/static/*'],
     });
 
@@ -137,12 +152,12 @@ export class WebStack extends cdk.Stack {
     nextjsFn.addPermission('AllowCloudFrontInvokeFunction', {
       principal: new iam.ServicePrincipal('cloudfront.amazonaws.com'),
       action: 'lambda:InvokeFunction',
-      sourceArn: `arn:aws:cloudfront::${this.account}:distribution/${distribution.distributionId}`,
+      sourceArn: `arn:aws:cloudfront::${this.account}:distribution/${this.distribution.distributionId}`,
     });
 
     // Outputs
     new cdk.CfnOutput(this, 'DistributionDomain', {
-      value: distribution.distributionDomainName,
+      value: this.distribution.distributionDomainName,
       description: 'CloudFront distribution domain',
     });
 

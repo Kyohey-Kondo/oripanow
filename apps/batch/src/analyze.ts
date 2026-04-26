@@ -1,3 +1,4 @@
+import { CloudFrontClient, CreateInvalidationCommand } from '@aws-sdk/client-cloudfront';
 import { BedrockRuntimeClient } from '@aws-sdk/client-bedrock-runtime';
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
@@ -17,6 +18,7 @@ const ANALYZE_BATCH_SIZE = Number(process.env.ANALYZE_BATCH_SIZE ?? '50');
 
 const docClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const bedrockClient = new BedrockRuntimeClient({});
+const cloudfrontClient = new CloudFrontClient({});
 
 function getTodayJST(): string {
   return new Intl.DateTimeFormat('ja-JP', {
@@ -95,5 +97,25 @@ export const handler = async (_event: unknown): Promise<AnalyzeRunResult> => {
 
   const result: AnalyzeRunResult = { runAt, tweetsProcessed, postsCreated, skipped, errors };
   console.log(JSON.stringify({ level: 'INFO', ...result }));
+
+  // Invalidate CloudFront cache so visitors see fresh data after the batch
+  const distributionId = process.env.CLOUDFRONT_DISTRIBUTION_ID;
+  if (distributionId) {
+    try {
+      await cloudfrontClient.send(
+        new CreateInvalidationCommand({
+          DistributionId: distributionId,
+          InvalidationBatch: {
+            CallerReference: runAt,
+            Paths: { Quantity: 1, Items: ['/oripa*'] },
+          },
+        }),
+      );
+      console.log(JSON.stringify({ level: 'INFO', message: 'CloudFront invalidation created', distributionId }));
+    } catch (err) {
+      console.warn(JSON.stringify({ level: 'WARN', message: 'CloudFront invalidation failed (non-fatal)', error: String(err) }));
+    }
+  }
+
   return result;
 };
