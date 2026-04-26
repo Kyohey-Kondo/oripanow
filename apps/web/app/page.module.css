@@ -5,6 +5,13 @@
   padding: 24px 32px;
 }
 
+/* Banner area below the page heading */
+.bannerArea {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
 /* Two-column flex layout */
 .contentLayout {
   display: flex;

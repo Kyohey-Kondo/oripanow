@@ -70,6 +70,13 @@ export default async function HomePage({
   return (
     <main className={styles.main}>
       <h1>オリパ最新情報</h1>
+      <div className={styles.bannerArea}>
+        <AdBanner
+          href="https://px.a8.net/svt/ejp?a8mat=4B1THW+96FLIQ+5PLE+5YZ75"
+          imgSrc="https://www23.a8.net/svt/bgt?aid=260425364555&wid=001&eno=01&mid=s00000026645001003000&mc=1"
+          trackingSrc="https://www11.a8.net/0.gif?a8mat=4B1THW+96FLIQ+5PLE+5YZ75"
+        />
+      </div>
       <div className={styles.contentLayout}>
         <div className={styles.tableColumn}>
           <nav style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
