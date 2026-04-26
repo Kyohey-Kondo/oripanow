@@ -1,6 +1,6 @@
 # oripanow Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-19
+Auto-generated from all feature plans. Last updated: 2026-04-26
 
 ## Active Technologies
 - TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, AWS SDK v3 (DynamoDB DocumentClient)
@@ -20,6 +20,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-19
 - TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`, `searchParams`) (011-top-page-pagination)
 - No DynamoDB changes — existing `getTodayOnSalePosts` extended to 60 items (011-top-page-pagination)
 - DynamoDB — `stores` table (read only, no schema change) (014-shop-google-map)
+- TypeScript 5.x / Node.js 22 LTS + AWS CDK v2 (`aws-cdk-lib`), `@aws-sdk/client-cloudfront` (new), `@aws-sdk/lib-dynamodb` (016-cloudfront-cache)
+- N/A (infrastructure change only) (016-cloudfront-cache)
 
 ## Project Structure
 
@@ -65,6 +67,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 016-cloudfront-cache: Added TypeScript 5.x / Node.js 22 LTS + AWS CDK v2 (`aws-cdk-lib`), `@aws-sdk/client-cloudfront` (new), `@aws-sdk/lib-dynamodb`
 - 014-shop-google-map: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`), `@aws-sdk/lib-dynamodb`
 - 011-top-page-pagination: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`, `searchParams`)
-- 010-shop-detail-page: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`), `@aws-sdk/lib-dynamodb`, `@oripa-now/db`, `@oripa-now/types`
