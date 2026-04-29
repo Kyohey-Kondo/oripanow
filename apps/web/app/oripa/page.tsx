@@ -72,9 +72,9 @@ export default async function HomePage({
       <h1>オリパ最新情報</h1>
       <div className={styles.bannerArea}>
         <AdBanner
-          href="https://px.a8.net/svt/ejp?a8mat=4B1THW+96FLIQ+5PLE+5YZ75"
-          imgSrc="https://www23.a8.net/svt/bgt?aid=260425364555&wid=001&eno=01&mid=s00000026645001003000&mc=1"
-          trackingSrc="https://www11.a8.net/0.gif?a8mat=4B1THW+96FLIQ+5PLE+5YZ75"
+          href="https://px.a8.net/svt/ejp?a8mat=4B1THW+4QVFEA+5I52+5Z6WX"
+          imgSrc="https://www25.a8.net/svt/bgt?aid=260425364287&wid=001&eno=01&mid=s00000025679001004000&mc=1"
+          trackingSrc="https://www13.a8.net/0.gif?a8mat=4B1THW+4QVFEA+5I52+5Z6WX"
         />
       </div>
       <div className={styles.contentLayout}>
