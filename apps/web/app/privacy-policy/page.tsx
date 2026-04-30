@@ -4,6 +4,7 @@ import styles from './page.module.css';
 export const metadata: Metadata = {
   title: 'プライバシーポリシー',
   description: 'オリパなうのプライバシーポリシー。個人情報の取り扱い、Cookie、広告・アフィリエイトについて説明しています。',
+  robots: { index: false },
 };
 
 export default function PrivacyPolicyPage() {
@@ -84,6 +85,11 @@ export default function PrivacyPolicyPage() {
         </p>
 
         <div className={styles.footerNote}>運営者：tacos／オリパなう</div>
+        <div style={{ textAlign: 'center', marginTop: '32px' }}>
+          <a href="/oripa" style={{ color: '#4a90d9', textDecoration: 'none', fontSize: '14px' }}>
+            ← オリパなうトップへ戻る
+          </a>
+        </div>
       </div>
     </div>
   );
