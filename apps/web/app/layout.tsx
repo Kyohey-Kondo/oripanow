@@ -19,8 +19,21 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  title: 'Oripa Now',
-  description: 'Pokemon card oripa sale information aggregator',
+  metadataBase: new URL('https://oripanow.com'),
+  title: {
+    default: 'オリパなう',
+    template: '%s | オリパなう',
+  },
+  description: 'ポケモンカードのオリパ最新情報を毎時更新。あたりカード・ラストワン賞情報つき。秋葉原・大宮・川越・浦和美園のオリパ在庫をリアルタイムで確認できます。',
+  keywords: ['オリパ', 'ポケモンカード', 'ポケカ', 'あたりカード', 'ラストワン', 'oripa', 'original pack', 'Pokemon card', 'Pokemon', 'Japanese oripa', 'Pokemon oripa', 'Pokemon original pack', '秋葉原', '大宮', '川越', '浦和美園'],
+  openGraph: {
+    type: 'website',
+    locale: 'ja_JP',
+    siteName: 'オリパなう',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
 };
 
 export default function RootLayout({

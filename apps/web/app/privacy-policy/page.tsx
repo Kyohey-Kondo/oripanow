@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
-  title: 'プライバシーポリシー｜オリパなう',
+  title: 'プライバシーポリシー',
+  description: 'オリパなうのプライバシーポリシー。個人情報の取り扱い、Cookie、広告・アフィリエイトについて説明しています。',
 };
 
 export default function PrivacyPolicyPage() {

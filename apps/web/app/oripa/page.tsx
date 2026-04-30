@@ -1,5 +1,6 @@
 import React from 'react';
 import Script from 'next/script';
+import type { Metadata } from 'next';
 import { Icon } from '@iconify/react';
 import { AdBanner } from '../components/AdBanner';
 import { getTodayOnSalePosts } from '../../lib/posts';
@@ -22,6 +23,53 @@ async function fetchOEmbed(twitterUsername: string, tweetId: string): Promise<st
 
 export const dynamic = 'force-dynamic';
 
+const BASE_URL = 'https://oripanow.com';
+
+const AREA_LABELS_MAP: Record<string, string> = {
+  akihabara:   '秋葉原',
+  kawagoe:     '川越',
+  omiya:       '大宮',
+  urawamisono: '浦和美園',
+};
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ area?: string; page?: string }>;
+}): Promise<Metadata> {
+  const { area, page } = await searchParams;
+  const areaLabel = area ? AREA_LABELS_MAP[area] : null;
+
+  const canonicalParams = new URLSearchParams();
+  if (area) canonicalParams.set('area', area);
+  if (page && page !== '1') canonicalParams.set('page', page);
+  const qs = canonicalParams.toString();
+  const canonicalUrl = `${BASE_URL}/oripa${qs ? `?${qs}` : ''}`;
+
+  const description = areaLabel
+    ? `${areaLabel}のポケモンカードオリパ最新情報。あたりカード・ラストワン賞情報を毎時更新。`
+    : 'ポケモンカードのオリパ最新情報を毎時更新。あたりカード・ラストワン賞情報つき。秋葉原・大宮・川越・浦和美園のオリパ在庫をリアルタイムで確認できます。';
+
+  if (areaLabel) {
+    const title = `${areaLabel}のオリパ情報`;
+    return {
+      title,
+      description,
+      alternates: { canonical: canonicalUrl },
+      openGraph: { title: `${title} | オリパなう`, description },
+      twitter: { title: `${title} | オリパなう`, description },
+    };
+  }
+
+  return {
+    title: { absolute: 'オリパなう' },
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: { title: 'オリパなう', description },
+    twitter: { title: 'オリパなう', description },
+  };
+}
+
 const PAGE_SIZE = 20;
 const MAX_PAGES = 3;
 
@@ -33,12 +81,7 @@ function pageUrl(p: number, area?: string): string {
   return qs ? `/oripa?${qs}` : '/oripa';
 }
 
-const AREA_LABELS: Record<string, string> = {
-  akihabara:   '秋葉原',
-  kawagoe:     '川越',
-  omiya:       '大宮',
-  urawamisono: '浦和美園',
-};
+const AREA_LABELS = AREA_LABELS_MAP;
 
 export default async function OripaPage({
   searchParams,

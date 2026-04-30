@@ -1,10 +1,14 @@
 import React from 'react';
+import { cache } from 'react';
 import Script from 'next/script';
+import type { Metadata } from 'next';
 import { Icon } from '@iconify/react';
 import { getShopPosts } from '../../../../lib/posts';
 import { tweetIdToDate } from '../../../../lib/tweet-utils';
 import { OripaCard } from '../../components/OripaCard';
 import styles from '../../oripa.module.css';
+
+const getCachedShopPosts = cache(getShopPosts);
 
 async function fetchOEmbed(twitterUsername: string, tweetId: string): Promise<string | null> {
   try {
@@ -32,6 +36,28 @@ const AREA_LABELS: Record<string, string> = {
   tokyo:       '東京',
 };
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ storeId: string }>;
+}): Promise<Metadata> {
+  const { storeId } = await params;
+  const { storeName, area } = await getCachedShopPosts(storeId);
+  const areaLabel = AREA_LABELS[area] ?? area;
+
+  if (!storeName) return { title: 'ショップ詳細' };
+
+  const title = `${storeName} のオリパ情報`;
+  const description = `${storeName}（${areaLabel}）の最新オリパ入荷情報。あたりカード・ラストワン賞情報つき。直近14日間の在庫をチェックできます。`;
+  return {
+    title,
+    description,
+    alternates: { canonical: `https://oripanow.com/oripa/shops/${storeId}` },
+    openGraph: { title: `${title} | オリパなう`, description },
+    twitter: { title: `${title} | オリパなう`, description },
+  };
+}
+
 function pageUrl(storeId: string, p: number): string {
   return p > 1 ? `/oripa/shops/${storeId}?page=${p}` : `/oripa/shops/${storeId}`;
 }
@@ -44,7 +70,7 @@ export default async function ShopPage({
   searchParams: Promise<{ page?: string }>;
 }) {
   const [{ storeId }, { page }] = await Promise.all([params, searchParams]);
-  const { summaries, storeName, area } = await getShopPosts(storeId);
+  const { summaries, storeName, area } = await getCachedShopPosts(storeId);
   const areaLabel = AREA_LABELS[area] ?? area;
   const mapUrl = `https://maps.google.com/maps?q=${encodeURIComponent(`${storeName} ${areaLabel}`)}&output=embed&hl=ja`;
 
