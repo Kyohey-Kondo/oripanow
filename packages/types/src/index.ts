@@ -18,5 +18,7 @@ export interface OripaPostSummary {
   lastOnePrizeName?: string;
   /** List of hit card names (あたりカード), if present */
   atariCards?: string[];
+  /** Area key (e.g. "akihabara"), if known */
+  area?: string;
 }
 

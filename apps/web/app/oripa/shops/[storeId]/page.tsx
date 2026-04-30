@@ -1,7 +1,10 @@
+import React from 'react';
 import Script from 'next/script';
 import { Icon } from '@iconify/react';
 import { getShopPosts } from '../../../../lib/posts';
-import styles from '../../../page.module.css';
+import { tweetIdToDate } from '../../../../lib/tweet-utils';
+import { OripaCard } from '../../components/OripaCard';
+import styles from '../../oripa.module.css';
 
 async function fetchOEmbed(twitterUsername: string, tweetId: string): Promise<string | null> {
   try {
@@ -22,20 +25,15 @@ const PAGE_SIZE = 20;
 const MAX_PAGES = 3;
 
 const AREA_LABELS: Record<string, string> = {
-  akihabara: '秋葉原',
-  omiya: '大宮',
-  kawagoe: '川越',
+  akihabara:   '秋葉原',
+  omiya:       '大宮',
+  kawagoe:     '川越',
   urawamisono: '浦和美園',
-  tokyo: '東京',
+  tokyo:       '東京',
 };
 
 function pageUrl(storeId: string, p: number): string {
   return p > 1 ? `/oripa/shops/${storeId}?page=${p}` : `/oripa/shops/${storeId}`;
-}
-
-function tweetIdToDate(tweetId: string): Date {
-  const TWITTER_EPOCH = 1288834974657n;
-  return new Date(Number((BigInt(tweetId) >> 22n) + TWITTER_EPOCH));
 }
 
 export default async function ShopPage({
@@ -60,108 +58,127 @@ export default async function ShopPage({
     .slice(0, 3);
   const oEmbeds = await Promise.all(top3.map((s) => fetchOEmbed(s.twitterUsername, s.tweetId)));
 
-  const navBtn: React.CSSProperties = { background: '#eee', color: '#333', padding: '6px 14px', borderRadius: '4px', textDecoration: 'none' };
-
   return (
-    <main className={styles.main}>
-      <p style={{ marginBottom: '8px' }}>
-        <a href="/oripa" style={{ color: '#555', textDecoration: 'none' }}>← トップへ戻る</a>
-      </p>
-      <h1>{storeName || 'ショップ詳細'}</h1>
-      {storeName && (
-        <div style={{ marginBottom: '16px' }}>
-          <iframe
-            src={mapUrl}
-            width="100%"
-            height="300"
-            style={{ border: 0, borderRadius: '8px', display: 'block' }}
-            loading="lazy"
-            allowFullScreen
-            referrerPolicy="no-referrer-when-downgrade"
-          />
+    <div className={styles.page}>
+      {/* Header */}
+      <header className={styles.header}>
+        <div className={styles.logo}>
+          <div className={styles.logoIcon}><Icon icon="mdi:cards-playing" width={20} height={20} /></div>
+          <div>
+            <div className={styles.logoText}>ORIPA NOW</div>
+            <div className={styles.logoSub}>オリパ最新情報</div>
+          </div>
         </div>
-      )}
-      <div className={styles.contentLayout}>
-        <div className={styles.tableColumn}>
-          {summaries.length === 0 ? (
-            <p style={{ color: '#666' }}>この店舗の直近14日間の情報はありません。</p>
-          ) : (
-            <>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '2px solid #ccc', textAlign: 'left' }}>
-                    <th style={{ padding: '8px' }}>ポスト日時</th>
-                    <th style={{ padding: '8px' }}>価格</th>
-                    <th style={{ padding: '8px' }}>在庫数</th>
-                    <th style={{ padding: '8px' }}>ラストワン賞</th>
-                    <th style={{ padding: '8px' }}>あたり</th>
-                    <th style={{ padding: '8px' }}>ポスト</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pageItems.map((s) => (
-                    <tr key={s.postId} style={{ borderBottom: '1px solid #eee' }}>
-                      <td style={{ padding: '8px' }}>
-                        {tweetIdToDate(s.tweetId).toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </td>
-                      <td style={{ padding: '8px' }}>
-                        {s.price !== undefined ? `¥${s.price.toLocaleString()}` : '—'}
-                      </td>
-                      <td style={{ padding: '8px' }}>
-                        {s.stockCount !== undefined ? s.stockCount : '—'}
-                      </td>
-                      <td style={{ padding: '8px', color: '#b45309', fontSize: '0.85em' }}>
-                        {s.lastOnePrizeName ?? '—'}
-                      </td>
-                      <td style={{ padding: '8px', fontSize: '0.85em' }}>
-                        {s.atariCards && s.atariCards.length > 0
-                          ? s.atariCards.length <= 3
-                            ? s.atariCards.join(' / ')
-                            : s.atariCards.slice(0, 3).join(' / ') + ` … (+${s.atariCards.length - 3})`
-                          : '—'}
-                      </td>
-                      <td style={{ padding: '8px' }}>
-                        <a href={`https://x.com/i/web/status/${s.tweetId}`} target="_blank" rel="noopener noreferrer">
-                          <Icon icon="ri:twitter-x-fill" width={16} height={16} />
-                        </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {totalPages > 1 && (
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'center', marginTop: '16px' }}>
-                  {pageIndex > 1
-                    ? <a href={pageUrl(storeId, pageIndex - 1)} style={navBtn}>← 前へ</a>
-                    : <span style={{ ...navBtn, color: '#bbb', cursor: 'default' }}>← 前へ</span>
-                  }
-                  <span style={{ color: '#666', fontSize: '14px' }}>{pageIndex} / {totalPages} ページ</span>
-                  {pageIndex < totalPages
-                    ? <a href={pageUrl(storeId, pageIndex + 1)} style={navBtn}>次へ →</a>
-                    : <span style={{ ...navBtn, color: '#bbb', cursor: 'default' }}>次へ →</span>
-                  }
-                </div>
-              )}
-            </>
-          )}
+        <a href="/oripa" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'var(--text-muted)', textDecoration: 'none' }}>
+          <Icon icon="heroicons:arrow-left" width={14} height={14} />
+          トップへ戻る
+        </a>
+      </header>
+
+      {/* Store info */}
+      <div style={{ padding: '20px 24px 0', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+          <Icon icon="heroicons:building-storefront" width={20} height={20} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+          <h1 style={{ fontFamily: 'var(--font-body)', fontSize: '18px', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+            {storeName || 'ショップ詳細'}
+          </h1>
+          {areaLabel && <span className={styles.areaTag}>{areaLabel}</span>}
         </div>
 
-        {oEmbeds.some(Boolean) && (
-          <aside className={styles.tweetSidebar}>
-            <div className={styles.tweetList}>
-              {oEmbeds.map((html, i) =>
-                html ? (
-                  <div key={top3[i].tweetId}
-                    style={{ zoom: 0.75 }}
-                    dangerouslySetInnerHTML={{ __html: html }}
-                  />
-                ) : null
-              )}
-            </div>
-          </aside>
+        {storeName && (
+          <div style={{ marginTop: '12px', marginBottom: '16px' }}>
+            <iframe
+              src={mapUrl}
+              width="100%"
+              height="240"
+              style={{ border: 0, borderRadius: '12px', display: 'block', filter: 'brightness(0.85) contrast(1.1)' }}
+              loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
         )}
       </div>
+
+      {/* Main content */}
+      <main className={styles.main}>
+        <div className={styles.contentLayout}>
+          <div className={styles.gridColumn}>
+            <div className={styles.sectionHeader}>
+              <div className={styles.sectionTitle}>オリパ履歴（直近14日）</div>
+              {summaries.length > 0 && (
+                <div className={styles.countBadge}>
+                  {summaries.length}件 / {(pageIndex - 1) * PAGE_SIZE + 1}〜{Math.min(pageIndex * PAGE_SIZE, summaries.length)}表示
+                </div>
+              )}
+            </div>
+
+            {summaries.length === 0 ? (
+              <p className={styles.emptyState}>この店舗の直近14日間の情報はありません。</p>
+            ) : (
+              <>
+                <div className={styles.cardsGrid}>
+                  {pageItems.map((s) => (
+                    <OripaCard
+                      key={s.postId}
+                      post={s}
+                      tweetTimestamp={tweetIdToDate(s.tweetId).toLocaleString('ja-JP', {
+                        timeZone: 'Asia/Tokyo',
+                        month: 'numeric',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    />
+                  ))}
+                </div>
+
+                {totalPages > 1 && (
+                  <div className={styles.pagination}>
+                    {pageIndex > 1 ? (
+                      <a href={pageUrl(storeId, pageIndex - 1)} className={styles.pageBtn}>← 前へ</a>
+                    ) : (
+                      <span className={`${styles.pageBtn} ${styles.pageBtnDisabled}`}>← 前へ</span>
+                    )}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                      <a
+                        key={p}
+                        href={pageUrl(storeId, p)}
+                        className={`${styles.pageBtn} ${p === pageIndex ? styles.pageBtnActive : ''}`}
+                      >
+                        {p}
+                      </a>
+                    ))}
+                    {pageIndex < totalPages ? (
+                      <a href={pageUrl(storeId, pageIndex + 1)} className={styles.pageBtn}>次へ →</a>
+                    ) : (
+                      <span className={`${styles.pageBtn} ${styles.pageBtnDisabled}`}>次へ →</span>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {oEmbeds.some(Boolean) && (
+            <aside className={styles.tweetSidebar}>
+              <div className={styles.tweetList}>
+                {oEmbeds.map((html, i) =>
+                  html ? (
+                    <div
+                      key={top3[i].tweetId}
+                      style={{ zoom: 0.75 }}
+                      dangerouslySetInnerHTML={{ __html: html }}
+                    />
+                  ) : null
+                )}
+              </div>
+            </aside>
+          )}
+        </div>
+      </main>
+
       <Script src="https://platform.twitter.com/widgets.js" strategy="lazyOnload" />
-    </main>
+    </div>
   );
 }

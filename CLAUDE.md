@@ -1,6 +1,6 @@
 # oripanow Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-26
+Auto-generated from all feature plans. Last updated: 2026-04-29
 
 ## Active Technologies
 - TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, AWS SDK v3 (DynamoDB DocumentClient)
@@ -67,6 +67,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 017-card-ui-redesign: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 016-cloudfront-cache: Added TypeScript 5.x / Node.js 22 LTS + AWS CDK v2 (`aws-cdk-lib`), `@aws-sdk/client-cloudfront` (new), `@aws-sdk/lib-dynamodb`
 - 014-shop-google-map: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`), `@aws-sdk/lib-dynamodb`
-- 011-top-page-pagination: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, `force-dynamic`, `searchParams`)

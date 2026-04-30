@@ -56,6 +56,7 @@ export function mapToSummary(
     ...(p.stockCount !== undefined && { stockCount: p.stockCount }),
     ...(p.lastOnePrizeName !== undefined && { lastOnePrizeName: p.lastOnePrizeName }),
     ...(p.atariCards && p.atariCards.length > 0 && { atariCards: p.atariCards }),
+    ...(p.areaStatusDate && { area: p.areaStatusDate.split('#')[0] }),
   }));
 }
 
