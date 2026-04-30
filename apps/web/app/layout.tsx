@@ -1,7 +1,22 @@
 import type { Metadata } from 'next';
+import { Orbitron, Noto_Sans_JP } from 'next/font/google';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Footer } from './components/Footer';
 import { AdBanner } from './components/AdBanner';
+
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  weight: ['600', '800'],
+  variable: '--font-orbitron',
+  display: 'swap',
+});
+
+const notoSansJP = Noto_Sans_JP({
+  subsets: ['latin'],
+  weight: ['400', '700', '900'],
+  variable: '--font-body',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Oripa Now',
@@ -16,8 +31,8 @@ export default function RootLayout({
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
-    <html lang="ja">
-      <body style={{ fontFamily: 'sans-serif', margin: 0, overflowX: 'hidden' }}>
+    <html lang="ja" className={`${orbitron.variable} ${notoSansJP.variable}`}>
+      <body style={{ fontFamily: 'var(--font-body, sans-serif)', margin: 0, overflowX: 'hidden' }}>
         {children}
         <AdBanner
           href="https://px.a8.net/svt/ejp?a8mat=4B1THW+97114I+5G0Y+5Z6WX"
