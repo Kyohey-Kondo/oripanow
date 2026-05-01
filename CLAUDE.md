@@ -67,8 +67,8 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 
 ## Area Rules
 
-- Valid areas: `akihabara`, `ikebukuro`, `kawagoe`, `omiya`
-- Tab display order: **東京エリア先（秋葉原→池袋）、埼玉エリア後（川越→大宮）**
+- Valid areas: `akihabara`, `ikebukuro`, `shinjuku`, `kawagoe`, `omiya`
+- Tab display order: **東京エリア先（秋葉原→池袋→新宿）、埼玉エリア後（川越→大宮）**
 - New areas must be added to: `packages/db/schema/index.ts` (type), `apps/web/lib/posts.ts` (AREAS array), `apps/web/app/oripa/page.tsx` (AREA_LABELS_MAP, in correct order), `apps/web/app/oripa/components/OripaCard.tsx` (AREA_LABELS), `apps/web/app/oripa/shops/[storeId]/page.tsx` (AREA_LABELS), `scripts/add-store.ts` (validateArea)
 <!-- MANUAL ADDITIONS END -->
 
