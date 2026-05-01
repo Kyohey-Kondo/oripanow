@@ -44,8 +44,8 @@ function required(name: string): string {
 }
 
 function validateArea(area: string): asserts area is StoreItem['area'] {
-  if (area !== 'tokyo' && area !== 'omiya' && area !== 'akihabara' && area !== 'ikebukuro') {
-    console.error(`Error: AREA must be "tokyo", "omiya", "akihabara" or "ikebukuro", got "${area}"`);
+  if (area !== 'tokyo' && area !== 'omiya' && area !== 'akihabara' && area !== 'ikebukuro' && area !== 'shinjuku') {
+    console.error(`Error: AREA must be "tokyo", "omiya", "akihabara", "ikebukuro" or "shinjuku", got "${area}"`);
     process.exit(1);
   }
 }
