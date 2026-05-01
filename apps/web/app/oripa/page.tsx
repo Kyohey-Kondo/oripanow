@@ -27,9 +27,9 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://oripanow.app';
 
 const AREA_LABELS_MAP: Record<string, string> = {
   akihabara: '秋葉原',
+  ikebukuro: '池袋',
   kawagoe:   '川越',
   omiya:     '大宮',
-  ikebukuro: '池袋',
 };
 
 export async function generateMetadata({
