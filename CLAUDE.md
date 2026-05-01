@@ -64,6 +64,12 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 ## UI Development Rules
 
 - **Always verify UI changes with Playwright before deploying.** Take a screenshot and confirm the layout looks correct.
+
+## Area Rules
+
+- Valid areas: `akihabara`, `ikebukuro`, `kawagoe`, `omiya`
+- Tab display order: **東京エリア先（秋葉原→池袋）、埼玉エリア後（川越→大宮）**
+- New areas must be added to: `packages/db/schema/index.ts` (type), `apps/web/lib/posts.ts` (AREAS array), `apps/web/app/oripa/page.tsx` (AREA_LABELS_MAP, in correct order), `apps/web/app/oripa/components/OripaCard.tsx` (AREA_LABELS), `apps/web/app/oripa/shops/[storeId]/page.tsx` (AREA_LABELS), `scripts/add-store.ts` (validateArea)
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
