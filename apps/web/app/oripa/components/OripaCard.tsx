@@ -26,10 +26,10 @@ const PRICE_CLASS: Record<PriceTier, string> = {
 };
 
 const AREA_LABELS: Record<string, string> = {
-  akihabara:   '秋葉原',
-  kawagoe:     '川越',
-  omiya:       '大宮',
-  urawamisono: '浦和美園',
+  akihabara: '秋葉原',
+  kawagoe:   '川越',
+  omiya:     '大宮',
+  ikebukuro: '池袋',
 };
 
 function formatAtariCards(cards: string[]): string {

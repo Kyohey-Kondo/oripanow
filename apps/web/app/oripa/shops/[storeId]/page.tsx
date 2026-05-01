@@ -29,11 +29,11 @@ const PAGE_SIZE = 20;
 const MAX_PAGES = 3;
 
 const AREA_LABELS: Record<string, string> = {
-  akihabara:   '秋葉原',
-  omiya:       '大宮',
-  kawagoe:     '川越',
-  urawamisono: '浦和美園',
-  tokyo:       '東京',
+  akihabara: '秋葉原',
+  kawagoe:   '川越',
+  omiya:     '大宮',
+  ikebukuro: '池袋',
+  tokyo:     '東京',
 };
 
 export async function generateMetadata({

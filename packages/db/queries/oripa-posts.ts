@@ -60,7 +60,7 @@ export async function queryOnSalePostsByDate(
   tableName: string,
   area: string,
   dateJST: string,
-  limit = 50,
+  limit = 100,
 ): Promise<OripaPostItem[]> {
   const result = await client.send(
     new QueryCommand({

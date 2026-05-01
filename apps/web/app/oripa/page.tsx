@@ -26,10 +26,10 @@ export const dynamic = 'force-dynamic';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://oripanow.app';
 
 const AREA_LABELS_MAP: Record<string, string> = {
-  akihabara:   '秋葉原',
-  kawagoe:     '川越',
-  omiya:       '大宮',
-  urawamisono: '浦和美園',
+  akihabara: '秋葉原',
+  kawagoe:   '川越',
+  omiya:     '大宮',
+  ikebukuro: '池袋',
 };
 
 export async function generateMetadata({
@@ -48,7 +48,7 @@ export async function generateMetadata({
 
   const description = areaLabel
     ? `${areaLabel}のポケモンカードオリパ最新情報。あたりカード・ラストワン賞情報を毎時更新。`
-    : 'ポケモンカードのオリパ最新情報を毎時更新。あたりカード・ラストワン賞情報つき。秋葉原・大宮・川越・浦和美園のオリパ在庫をリアルタイムで確認できます。';
+    : 'ポケモンカードのオリパ最新情報を毎時更新。あたりカード・ラストワン賞情報つき。秋葉原・大宮・川越・池袋のオリパ在庫をリアルタイムで確認できます。';
 
   if (areaLabel) {
     const title = `${areaLabel}のオリパ情報`;
