@@ -19,7 +19,7 @@ const notoSansJP = Noto_Sans_JP({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://oripanow.com'),
+  metadataBase: new URL('https://oripanow.app'),
   title: {
     default: 'オリパなう',
     template: '%s | オリパなう',
