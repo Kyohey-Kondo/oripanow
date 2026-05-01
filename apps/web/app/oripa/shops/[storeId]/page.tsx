@@ -52,7 +52,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `https://oripanow.app/oripa/shops/${storeId}` },
+    alternates: { canonical: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://oripanow.app'}/oripa/shops/${storeId}` },
     openGraph: { title: `${title} | オリパなう`, description },
     twitter: { title: `${title} | オリパなう`, description },
   };

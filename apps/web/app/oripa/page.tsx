@@ -23,7 +23,7 @@ async function fetchOEmbed(twitterUsername: string, tweetId: string): Promise<st
 
 export const dynamic = 'force-dynamic';
 
-const BASE_URL = 'https://oripanow.app';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://oripanow.app';
 
 const AREA_LABELS_MAP: Record<string, string> = {
   akihabara:   '秋葉原',

@@ -3,7 +3,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { TABLE_NAMES } from '@oripa-now/db';
 
-const BASE_URL = 'https://oripanow.app';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://oripanow.app';
 
 async function getAllActiveStoreIds(): Promise<string[]> {
   const client = DynamoDBDocumentClient.from(
