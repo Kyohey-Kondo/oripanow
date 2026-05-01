@@ -63,7 +63,7 @@ export function OripaCard({ post, tweetTimestamp }: Props) {
 
         <div className={styles.priceRow}>
           <div className={PRICE_CLASS[tier]}>
-            {post.price !== undefined ? `¥${post.price.toLocaleString()}` : '—'}
+            {post.price != null ? `¥${post.price.toLocaleString()}` : '—'}
           </div>
           <div className={styles.stockPill}>
             <Icon icon="mdi:package-variant-closed" width={13} height={13} />

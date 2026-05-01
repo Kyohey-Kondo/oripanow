@@ -60,18 +60,18 @@ export async function queryOnSalePostsByDate(
   tableName: string,
   area: string,
   dateJST: string,
-  limit = 100,
 ): Promise<OripaPostItem[]> {
   const result = await client.send(
     new QueryCommand({
       TableName: tableName,
       IndexName: GSI.oripaPostsByAreaStatusDate,
       KeyConditionExpression: "areaStatusDate = :pk",
+      FilterExpression: "price > :zero OR stockCount > :zero",
       ExpressionAttributeValues: {
         ":pk": `${area}#on_sale#${dateJST}`,
+        ":zero": 0,
       },
       ScanIndexForward: false,
-      Limit: limit,
     }),
   );
   return (result.Items ?? []) as OripaPostItem[];
