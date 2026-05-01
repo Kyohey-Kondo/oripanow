@@ -96,12 +96,13 @@ export async function queryRecentPostsByStore(
       TableName: tableName,
       IndexName: GSI.oripaPostsByStore,
       KeyConditionExpression: "storeId = :storeId AND createdAt >= :cutoff",
+      FilterExpression: "price > :zero OR stockCount > :zero",
       ExpressionAttributeValues: {
         ":storeId": storeId,
         ":cutoff": cutoffISO,
+        ":zero": 0,
       },
       ScanIndexForward: false,
-      Limit: 100,
     }),
   );
   return (result.Items ?? []) as OripaPostItem[];
