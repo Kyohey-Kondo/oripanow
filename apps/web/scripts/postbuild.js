@@ -38,7 +38,15 @@ for (const versionedDir of fs.readdirSync(pnpmStore).filter((e) => e !== 'node_m
 }
 console.log('✓ Flattened pnpm virtual store');
 
-// --- Step 2: Write run.sh ---
+// --- Step 2: Copy public/ into standalone ---
+const publicSrc = path.join(__dirname, '../public');
+const publicDst = path.join(standalone, 'apps/web/public');
+if (fs.existsSync(publicSrc)) {
+  fs.cpSync(publicSrc, publicDst, { recursive: true, dereference: true });
+  console.log('✓ Copied public/');
+}
+
+// --- Step 3: Write run.sh ---
 // LWA's bootstrap treats the Lambda handler value as a path to an executable.
 // run.sh starts the Next.js HTTP server; LWA then intercepts Lambda events
 // and forwards them as HTTP requests to PORT 3000.

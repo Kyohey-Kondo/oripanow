@@ -93,6 +93,23 @@ export class BatchStack extends cdk.Stack {
       `/oripa-now/${deployEnv}/TWITTER_BEARER_TOKEN`,
     );
 
+    const xApiKey = ssm.StringParameter.valueForStringParameter(
+      this,
+      `/oripa-now/${deployEnv}/customer-key`,
+    );
+    const xApiSecret = ssm.StringParameter.valueForStringParameter(
+      this,
+      `/oripa-now/${deployEnv}/customer-key-secret`,
+    );
+    const xAccessToken = ssm.StringParameter.valueForStringParameter(
+      this,
+      `/oripa-now/${deployEnv}/access-token`,
+    );
+    const xAccessTokenSecret = ssm.StringParameter.valueForStringParameter(
+      this,
+      `/oripa-now/${deployEnv}/access-token-secret`,
+    );
+
     // ─── Lambda: batch processing ────────────────────────────────────────────
     const batchFn = new lambdaNodejs.NodejsFunction(this, 'BatchFunction', {
       functionName: `${deployEnv}-oripa-now-batch`,
@@ -187,6 +204,43 @@ export class BatchStack extends cdk.Stack {
       ruleName: `${deployEnv}-oripa-now-analyze`,
       schedule: events.Schedule.cron({ hour: '0', minute: '10' }),
       targets: [new eventsTargets.LambdaFunction(analyzeFn)],
+    });
+
+    // ─── Lambda: x-post ──────────────────────────────────────────────────────
+    const xPostFn = new lambdaNodejs.NodejsFunction(this, 'XPostFunction', {
+      functionName: `${deployEnv}-oripa-now-x-post`,
+      entry: path.join(__dirname, '../../../apps/batch/src/x-post.ts'),
+      handler: 'handler',
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: cdk.Duration.minutes(5),
+      environment: {
+        DEPLOY_ENV: deployEnv,
+        ORIPA_POSTS_TABLE_NAME: oripaPostsTable.tableName,
+        X_API_KEY: xApiKey,
+        X_API_SECRET: xApiSecret,
+        X_ACCESS_TOKEN: xAccessToken,
+        X_ACCESS_TOKEN_SECRET: xAccessTokenSecret,
+        SITE_URL: 'https://oripanow.app',
+      },
+      logGroup: new logs.LogGroup(this, 'XPostLogGroup', {
+        logGroupName: `/aws/lambda/${deployEnv}-oripa-now-x-post`,
+        retention: logs.RetentionDays.ONE_WEEK,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+      }),
+      bundling: {
+        minify: true,
+        sourceMap: false,
+        externalModules: [],
+      },
+    });
+
+    oripaPostsTable.grantReadData(xPostFn);
+
+    // EventBridge: 09:20 JST (00:20 UTC) — 10 minutes after analyze
+    new events.Rule(this, 'XPostScheduleRule', {
+      ruleName: `${deployEnv}-oripa-now-x-post`,
+      schedule: events.Schedule.cron({ hour: '0', minute: '20' }),
+      targets: [new eventsTargets.LambdaFunction(xPostFn)],
     });
 
     // ─── Outputs ─────────────────────────────────────────────────────────────

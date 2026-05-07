@@ -24,6 +24,7 @@ async function fetchOEmbed(twitterUsername: string, tweetId: string): Promise<st
 export const dynamic = 'force-dynamic';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://oripanow.app';
+const OG_IMAGE = [{ url: '/og-image.png', width: 1200, height: 630 }];
 
 const AREA_LABELS_MAP: Record<string, string> = {
   akihabara: '秋葉原',
@@ -57,8 +58,8 @@ export async function generateMetadata({
       title,
       description,
       alternates: { canonical: canonicalUrl },
-      openGraph: { title: `${title} | オリパなう`, description },
-      twitter: { title: `${title} | オリパなう`, description },
+      openGraph: { title: `${title} | オリパなう`, description, images: OG_IMAGE },
+      twitter: { title: `${title} | オリパなう`, description, images: OG_IMAGE },
     };
   }
 
@@ -66,8 +67,8 @@ export async function generateMetadata({
     title: { absolute: 'オリパなう' },
     description,
     alternates: { canonical: canonicalUrl },
-    openGraph: { title: 'オリパなう', description },
-    twitter: { title: 'オリパなう', description },
+    openGraph: { title: 'オリパなう', description, images: OG_IMAGE },
+    twitter: { title: 'オリパなう', description, images: OG_IMAGE },
   };
 }
 
