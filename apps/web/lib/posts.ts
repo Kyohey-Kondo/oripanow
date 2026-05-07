@@ -12,6 +12,14 @@ import type { OripaPostSummary } from "@oripa-now/types";
 const AREAS = ["akihabara", "ikebukuro", "shinjuku", "kawagoe", "omiya"] as const;
 const MAX_RESULTS = 60;
 
+// ─── Sort / Filter types ──────────────────────────────────────────────────────
+
+export type SortOption = 'newest' | 'price_asc' | 'price_desc' | 'stock_asc' | 'stock_desc';
+export type FilterOption = 'last_one' | 'hit_card' | 'both';
+
+export const VALID_SORTS: SortOption[] = ['newest', 'price_asc', 'price_desc', 'stock_asc', 'stock_desc'];
+export const VALID_FILTERS: FilterOption[] = ['last_one', 'hit_card', 'both'];
+
 // ─── Pure functions ───────────────────────────────────────────────────────────
 
 /** Sort posts by tweetId descending (newest tweet first). Returns a new array. */
@@ -37,6 +45,51 @@ export function deduplicateByPriceAndStock(posts: OripaPostItem[]): OripaPostIte
 /** Limit the result list to at most `limit` items. */
 export function capResults(posts: OripaPostItem[], limit: number): OripaPostItem[] {
   return posts.slice(0, limit);
+}
+
+/**
+ * Sort OripaPostSummary[] by the given SortOption.
+ * - 'newest': returns the array as-is (already sorted by getTodayOnSalePosts)
+ * - price/stock sorts: undefined values always placed at the end
+ */
+export function sortPosts(posts: OripaPostSummary[], sort: SortOption): OripaPostSummary[] {
+  if (sort === 'newest') return posts;
+  return [...posts].sort((a, b) => {
+    if (sort === 'price_asc' || sort === 'price_desc') {
+      const aVal = a.price;
+      const bVal = b.price;
+      if (aVal === undefined && bVal === undefined) return 0;
+      if (aVal === undefined) return 1;
+      if (bVal === undefined) return -1;
+      return sort === 'price_asc' ? aVal - bVal : bVal - aVal;
+    }
+    if (sort === 'stock_asc' || sort === 'stock_desc') {
+      const aVal = a.stockCount;
+      const bVal = b.stockCount;
+      if (aVal === undefined && bVal === undefined) return 0;
+      if (aVal === undefined) return 1;
+      if (bVal === undefined) return -1;
+      return sort === 'stock_asc' ? aVal - bVal : bVal - aVal;
+    }
+    return 0;
+  });
+}
+
+/**
+ * Filter OripaPostSummary[] by prize information.
+ * - undefined: no filtering, returns all posts
+ * - 'last_one': only posts with a non-empty lastOnePrizeName
+ * - 'hit_card': only posts with a non-empty atariCards array
+ * - 'both': only posts that have both lastOnePrizeName and atariCards
+ */
+export function filterPosts(posts: OripaPostSummary[], filter: FilterOption | undefined): OripaPostSummary[] {
+  if (!filter) return posts;
+  if (filter === 'last_one') return posts.filter((p) => p.lastOnePrizeName && p.lastOnePrizeName.length > 0);
+  if (filter === 'hit_card') return posts.filter((p) => p.atariCards && p.atariCards.length > 0);
+  if (filter === 'both') return posts.filter(
+    (p) => p.lastOnePrizeName && p.lastOnePrizeName.length > 0 && p.atariCards && p.atariCards.length > 0,
+  );
+  return posts;
 }
 
 /** Map OripaPostItem[] to OripaPostSummary[] for the UI layer. */

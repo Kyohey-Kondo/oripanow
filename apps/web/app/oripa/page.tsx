@@ -3,9 +3,17 @@ import Script from 'next/script';
 import type { Metadata } from 'next';
 import { Icon } from '@iconify/react';
 import { AdBanner } from '../components/AdBanner';
-import { getTodayOnSalePosts } from '../../lib/posts';
+import {
+  getTodayOnSalePosts,
+  sortPosts,
+  filterPosts,
+  VALID_SORTS,
+  VALID_FILTERS,
+} from '../../lib/posts';
+import type { SortOption, FilterOption } from '../../lib/posts';
 import { tweetIdToDate } from '../../lib/tweet-utils';
 import { OripaCard } from './components/OripaCard';
+import { SortFilterToolbar } from './components/SortFilterToolbar';
 import styles from './oripa.module.css';
 
 async function fetchOEmbed(twitterUsername: string, tweetId: string): Promise<string | null> {
@@ -37,7 +45,7 @@ const AREA_LABELS_MAP: Record<string, string> = {
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<{ area?: string; page?: string }>;
+  searchParams: Promise<{ area?: string; page?: string; sort?: string; filter?: string }>;
 }): Promise<Metadata> {
   const { area, page } = await searchParams;
   const areaLabel = area ? AREA_LABELS_MAP[area] : null;
@@ -75,9 +83,11 @@ export async function generateMetadata({
 const PAGE_SIZE = 20;
 const MAX_PAGES = 3;
 
-function pageUrl(p: number, area?: string): string {
+function pageUrl(p: number, area?: string, sort?: SortOption, filter?: FilterOption): string {
   const params = new URLSearchParams();
   if (area) params.set('area', area);
+  if (sort && sort !== 'newest') params.set('sort', sort);
+  if (filter) params.set('filter', filter);
   if (p > 1) params.set('page', String(p));
   const qs = params.toString();
   return qs ? `/oripa?${qs}` : '/oripa';
@@ -88,17 +98,24 @@ const AREA_LABELS = AREA_LABELS_MAP;
 export default async function OripaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ area?: string; page?: string }>;
+  searchParams: Promise<{ area?: string; page?: string; sort?: string; filter?: string }>;
 }) {
-  const { area, page } = await searchParams;
+  const { area, page, sort: sortParam, filter: filterParam } = await searchParams;
+
+  // Validate sort/filter params — fall back to defaults for unknown values
+  const resolvedSort: SortOption = VALID_SORTS.includes(sortParam as SortOption) ? (sortParam as SortOption) : 'newest';
+  const resolvedFilter: FilterOption | undefined = VALID_FILTERS.includes(filterParam as FilterOption) ? (filterParam as FilterOption) : undefined;
+
   const summaries = await getTodayOnSalePosts(area);
+  const sorted = sortPosts(summaries, resolvedSort);
+  const filtered = filterPosts(sorted, resolvedFilter);
 
-  // Pagination
+  // Pagination (based on filtered result count)
   const pageIndex = Math.min(Math.max(parseInt(page ?? '1') || 1, 1), MAX_PAGES);
-  const totalPages = Math.min(Math.ceil(summaries.length / PAGE_SIZE), MAX_PAGES);
-  const pageItems = summaries.slice((pageIndex - 1) * PAGE_SIZE, pageIndex * PAGE_SIZE);
+  const totalPages = Math.min(Math.ceil(filtered.length / PAGE_SIZE), MAX_PAGES);
+  const pageItems = filtered.slice((pageIndex - 1) * PAGE_SIZE, pageIndex * PAGE_SIZE);
 
-  // Top 3 unique tweets for oEmbed previews
+  // Top 3 unique tweets for oEmbed previews (from full unfiltered list)
   const top3 = summaries
     .filter((s, i, arr) => arr.findIndex((x) => x.tweetId === s.tweetId) === i)
     .slice(0, 3);
@@ -130,37 +147,48 @@ export default async function OripaPage({
         />
       </div>
 
-      {/* Area tabs */}
-      <nav className={styles.areaTabs}>
-        <a href="/oripa" className={`${styles.tab} ${!area ? styles.tabActive : ''}`}>
-          すべて
-        </a>
-        {Object.entries(AREA_LABELS).map(([key, label]) => (
-          <a
-            key={key}
-            href={`/oripa?area=${key}`}
-            className={`${styles.tab} ${area === key ? styles.tabActive : ''}`}
-          >
-            {label}
-          </a>
-        ))}
-      </nav>
-
       {/* Main content */}
       <main className={styles.main}>
         <div className={styles.contentLayout}>
           <div className={styles.gridColumn}>
+
+            {/* Area tabs */}
+            <nav className={styles.areaTabs}>
+              <a href="/oripa" className={`${styles.tab} ${!area ? styles.tabActive : ''}`}>
+                すべて
+              </a>
+              {Object.entries(AREA_LABELS).map(([key, label]) => (
+                <a
+                  key={key}
+                  href={`/oripa?area=${key}`}
+                  className={`${styles.tab} ${area === key ? styles.tabActive : ''}`}
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
+
             <div className={styles.sectionHeader}>
               <div className={styles.sectionTitle}>本日のオリパ情報</div>
-              {summaries.length > 0 && (
+              {filtered.length > 0 && (
                 <div className={styles.countBadge}>
-                  {summaries.length}件 / {(pageIndex - 1) * PAGE_SIZE + 1}〜{Math.min(pageIndex * PAGE_SIZE, summaries.length)}表示
+                  {filtered.length}件 / {(pageIndex - 1) * PAGE_SIZE + 1}〜{Math.min(pageIndex * PAGE_SIZE, filtered.length)}表示
                 </div>
               )}
             </div>
 
+            {summaries.length > 0 && (
+              <SortFilterToolbar
+                currentSort={resolvedSort}
+                currentFilter={resolvedFilter}
+                area={area}
+              />
+            )}
+
             {summaries.length === 0 ? (
               <p className={styles.emptyState}>直近14日間のオリパ情報はありません。</p>
+            ) : filtered.length === 0 ? (
+              <p className={styles.emptyState}>条件に一致するオリパ情報がありません。</p>
             ) : (
               <>
                 <div className={styles.cardsGrid}>
@@ -182,21 +210,21 @@ export default async function OripaPage({
                 {totalPages > 1 && (
                   <div className={styles.pagination}>
                     {pageIndex > 1 ? (
-                      <a href={pageUrl(pageIndex - 1, area)} className={styles.pageBtn}>← 前へ</a>
+                      <a href={pageUrl(pageIndex - 1, area, resolvedSort, resolvedFilter)} className={styles.pageBtn}>← 前へ</a>
                     ) : (
                       <span className={`${styles.pageBtn} ${styles.pageBtnDisabled}`}>← 前へ</span>
                     )}
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                       <a
                         key={p}
-                        href={pageUrl(p, area)}
+                        href={pageUrl(p, area, resolvedSort, resolvedFilter)}
                         className={`${styles.pageBtn} ${p === pageIndex ? styles.pageBtnActive : ''}`}
                       >
                         {p}
                       </a>
                     ))}
                     {pageIndex < totalPages ? (
-                      <a href={pageUrl(pageIndex + 1, area)} className={styles.pageBtn}>次へ →</a>
+                      <a href={pageUrl(pageIndex + 1, area, resolvedSort, resolvedFilter)} className={styles.pageBtn}>次へ →</a>
                     ) : (
                       <span className={`${styles.pageBtn} ${styles.pageBtnDisabled}`}>次へ →</span>
                     )}
