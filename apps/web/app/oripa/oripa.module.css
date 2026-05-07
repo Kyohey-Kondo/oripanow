@@ -99,11 +99,10 @@
 /* ── Area Tabs ───────────────────────────────────────────────────────── */
 
 .areaTabs {
-  position: relative;
-  z-index: 10;
   display: flex;
   gap: 6px;
-  padding: 16px 24px;
+  padding: 8px 0;
+  margin-bottom: 8px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -136,6 +135,37 @@
   border-color: var(--accent);
   color: #0a0c14;
   box-shadow: 0 0 16px rgba(245, 200, 66, 0.35);
+}
+
+/* ── Sort / Filter Toolbar ───────────────────────────────────────────── */
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.toolbarSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbarLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  flex-shrink: 0;
+  min-width: 44px;
+}
+
+.toolbarButtons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 /* ── Main grid area ──────────────────────────────────────────────────── */
@@ -452,7 +482,7 @@
   }
 
   .areaTabs {
-    padding: 12px 16px;
+    padding: 6px 0;
   }
 
   .main {
