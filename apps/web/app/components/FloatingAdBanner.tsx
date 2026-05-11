@@ -37,12 +37,11 @@ export function FloatingAdBanner() {
       <a href="https://px.a8.net/svt/ejp?a8mat=4B1THW+4QVFEA+5I52+5ZMCH" rel="nofollow">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          border={0}
           width={100}
           height={60}
           alt=""
           src="https://www27.a8.net/svt/bgt?aid=260425364287&wid=001&eno=01&mid=s00000025679001006000&mc=1"
-          style={{ display: 'block', width: 200, height: 120 }}
+          style={{ display: 'block', width: 200, height: 120, border: 0 }}
         />
       </a>
       {/* eslint-disable-next-line @next/next/no-img-element */}
