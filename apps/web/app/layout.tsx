@@ -3,6 +3,7 @@ import { Orbitron, Noto_Sans_JP } from 'next/font/google';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import { Footer } from './components/Footer';
 import { AdBanner } from './components/AdBanner';
+import { FloatingAdBanner } from './components/FloatingAdBanner';
 
 const orbitron = Orbitron({
   subsets: ['latin'],
@@ -54,6 +55,7 @@ export default function RootLayout({
           trackingSrc="https://www13.a8.net/0.gif?a8mat=4B1THW+97114I+5G0Y+5Z6WX"
           style={{ padding: '24px 0' }}
         />
+        <FloatingAdBanner />
         <Footer />
       </body>
       {gaId && process.env.NODE_ENV === 'production' && <GoogleAnalytics gaId={gaId} />}
