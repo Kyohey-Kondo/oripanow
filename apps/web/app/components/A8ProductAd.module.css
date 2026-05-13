@@ -1,0 +1,16 @@
+.wrapper {
+  text-align: center;
+  padding: 24px 0;
+  overflow: hidden;
+}
+
+.inner {
+  display: inline-block;
+  max-width: 100%;
+  width: 300px;
+}
+
+.inner img {
+  max-width: 100%;
+  height: auto;
+}

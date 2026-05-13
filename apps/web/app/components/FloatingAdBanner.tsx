@@ -1,10 +1,26 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Script from 'next/script';
 import styles from './FloatingAdBanner.module.css';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const showAd = () => (window as any).a8adscript?.('body').showAd({
+  req: { mat: '4B1THW+4QVFEA+5I52+BWGDT', alt: '商品リンク', id: '4AguhTp-g7-vjvN32r' },
+  goods: {
+    ejp: 'h' + 'ttps://orikuji.com/gacha/pokemon/ga0011_202605_162?utm_source=a8&utm_source=a8&utm_medium=affiliate&utm_medium=affiliate&utm_campaign=2yyi5&utm_campaign=260425364287&a8=v4ucY4bPLXAUKyAcbsZSSy_5RP0dg0uafsZywXBJ4rkPL-u1htzaituaKt05Q5zTHr8XB3u_H4ucms00000025679001',
+    imu: 'h' + 'ttps://media.orikuji.com/gacha/ga0011_202605_162_thumb.webp',
+  },
+});
 
 export function FloatingAdBanner() {
   const [closed, setClosed] = useState(false);
+
+  useEffect(() => {
+    // ad.js が A8ProductAd によって既にロード済みの場合は即呼び出す
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((window as any).a8adscript) showAd();
+  }, []);
 
   if (closed) return null;
 
@@ -33,24 +49,11 @@ export function FloatingAdBanner() {
       >
         ×
       </button>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <a href="https://px.a8.net/svt/ejp?a8mat=4B1THW+4QVFEA+5I52+5ZMCH" rel="nofollow">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          width={100}
-          height={60}
-          alt=""
-          src="https://www27.a8.net/svt/bgt?aid=260425364287&wid=001&eno=01&mid=s00000025679001006000&mc=1"
-          style={{ display: 'block', width: 200, height: 120, border: 0 }}
-        />
-      </a>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        style={{ border: 0 }}
-        width={1}
-        height={1}
-        src="https://www16.a8.net/0.gif?a8mat=4B1THW+4QVFEA+5I52+5ZMCH"
-        alt=""
+      <span className="a8ad 4AguhTp-g7-vjvN32r"></span>
+      <Script
+        src="//statics.a8.net/ad/ad.js"
+        strategy="lazyOnload"
+        onLoad={showAd}
       />
     </div>
   );

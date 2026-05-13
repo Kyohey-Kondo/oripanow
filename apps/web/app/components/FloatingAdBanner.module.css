@@ -1,9 +1,16 @@
 .wrapper {
   display: none;
   position: fixed;
-  bottom: -10px;
+  bottom: 16px;
   right: 16px;
   z-index: 1000;
+  max-width: 200px;
+}
+
+.wrapper img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 @media (max-width: 767px) {
