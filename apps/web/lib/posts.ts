@@ -9,7 +9,7 @@ import type { OripaPostItem, StoreItem } from "@oripa-now/db";
 import { TABLE_NAMES } from "@oripa-now/db";
 import type { OripaPostSummary } from "@oripa-now/types";
 
-const AREAS = ["akihabara", "ikebukuro", "shinjuku", "kawagoe", "omiya"] as const;
+const AREAS = ["akihabara", "ikebukuro", "shinjuku", "namba", "kawagoe", "omiya"] as const;
 const MAX_RESULTS = 60;
 
 // ─── Sort / Filter types ──────────────────────────────────────────────────────

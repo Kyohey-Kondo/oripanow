@@ -32,6 +32,7 @@ const AREA_LABELS: Record<string, string> = {
   akihabara: '秋葉原',
   ikebukuro: '池袋',
   shinjuku:  '新宿',
+  namba:     'なんば',
   kawagoe:   '川越',
   omiya:     '大宮',
   tokyo:     '東京',
