@@ -12,6 +12,7 @@ import {
 } from '../../lib/posts';
 import type { SortOption, FilterOption } from '../../lib/posts';
 import { tweetIdToDate } from '../../lib/tweet-utils';
+import { REGIONS, getAreasForRegion } from '../../lib/regions';
 import { OripaCard } from './components/OripaCard';
 import { SortFilterToolbar } from './components/SortFilterToolbar';
 import styles from './oripa.module.css';
@@ -47,12 +48,14 @@ const AREA_LABELS_MAP: Record<string, string> = {
 export async function generateMetadata({
   searchParams,
 }: {
-  searchParams: Promise<{ area?: string; page?: string; sort?: string; filter?: string }>;
+  searchParams: Promise<{ area?: string; region?: string; page?: string; sort?: string; filter?: string }>;
 }): Promise<Metadata> {
-  const { area, page } = await searchParams;
+  const { area, region, page } = await searchParams;
   const areaLabel = area ? AREA_LABELS_MAP[area] : null;
+  const regionLabel = !area && region ? REGIONS.find((r) => r.key === region)?.label : null;
 
   const canonicalParams = new URLSearchParams();
+  if (region) canonicalParams.set('region', region);
   if (area) canonicalParams.set('area', area);
   if (page && page !== '1') canonicalParams.set('page', page);
   const qs = canonicalParams.toString();
@@ -62,11 +65,12 @@ export async function generateMetadata({
     ? `${areaLabel}のポケモンカードオリパ最新情報。あたりカード・ラストワン賞情報を毎時更新。`
     : 'ポケモンカードのオリパ最新情報を毎時更新。あたりカード・ラストワン賞情報つき。秋葉原・池袋・新宿・大宮・川越のオリパ在庫をリアルタイムで確認できます。';
 
-  if (areaLabel) {
-    const title = `${areaLabel}のオリパ情報`;
+  const pageLabel = areaLabel ?? regionLabel;
+  if (pageLabel) {
+    const title = `${pageLabel}のオリパ情報`;
     return {
       title,
-      description,
+      description: `${pageLabel}のポケモンカードオリパ最新情報。あたりカード・ラストワン賞情報を毎時更新。`,
       alternates: { canonical: canonicalUrl },
       openGraph: { title: `${title} | オリパなう`, description, images: OG_IMAGE },
       twitter: { title: `${title} | オリパなう`, description, images: OG_IMAGE },
@@ -85,8 +89,9 @@ export async function generateMetadata({
 const PAGE_SIZE = 20;
 const MAX_PAGES = 3;
 
-function pageUrl(p: number, area?: string, sort?: SortOption, filter?: FilterOption): string {
+function pageUrl(p: number, area?: string, sort?: SortOption, filter?: FilterOption, region?: string): string {
   const params = new URLSearchParams();
+  if (region) params.set('region', region);
   if (area) params.set('area', area);
   if (sort && sort !== 'newest') params.set('sort', sort);
   if (filter) params.set('filter', filter);
@@ -100,15 +105,19 @@ const AREA_LABELS = AREA_LABELS_MAP;
 export default async function OripaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ area?: string; page?: string; sort?: string; filter?: string }>;
+  searchParams: Promise<{ area?: string; region?: string; page?: string; sort?: string; filter?: string }>;
 }) {
-  const { area, page, sort: sortParam, filter: filterParam } = await searchParams;
+  const { area, region, page, sort: sortParam, filter: filterParam } = await searchParams;
 
   // Validate sort/filter params — fall back to defaults for unknown values
   const resolvedSort: SortOption = VALID_SORTS.includes(sortParam as SortOption) ? (sortParam as SortOption) : 'newest';
   const resolvedFilter: FilterOption | undefined = VALID_FILTERS.includes(filterParam as FilterOption) ? (filterParam as FilterOption) : undefined;
 
-  const summaries = await getTodayOnSalePosts(area);
+  // Resolve which areas to show in tier-2 and query
+  const validRegion = REGIONS.find((r) => r.key === region)?.key;
+  const visibleAreas = getAreasForRegion(validRegion);
+
+  const summaries = await getTodayOnSalePosts(area, validRegion ? visibleAreas : undefined);
   const sorted = sortPosts(summaries, resolvedSort);
   const filtered = filterPosts(sorted, resolvedFilter);
 
@@ -154,18 +163,37 @@ export default async function OripaPage({
         <div className={styles.contentLayout}>
           <div className={styles.gridColumn}>
 
-            {/* Area tabs */}
+            {/* Region tabs (tier-1) */}
+            <nav className={styles.regionTabs}>
+              <a href="/oripa" className={`${styles.regionTab} ${!validRegion ? styles.regionTabActive : ''}`}>
+                全国
+              </a>
+              {REGIONS.map((r) => (
+                <a
+                  key={r.key}
+                  href={`/oripa?region=${r.key}`}
+                  className={`${styles.regionTab} ${validRegion === r.key ? styles.regionTabActive : ''}`}
+                >
+                  {r.label}
+                </a>
+              ))}
+            </nav>
+
+            {/* Area tabs (tier-2) */}
             <nav className={styles.areaTabs}>
-              <a href="/oripa" className={`${styles.tab} ${!area ? styles.tabActive : ''}`}>
+              <a
+                href={validRegion ? `/oripa?region=${validRegion}` : '/oripa'}
+                className={`${styles.tab} ${!area ? styles.tabActive : ''}`}
+              >
                 すべて
               </a>
-              {Object.entries(AREA_LABELS).map(([key, label]) => (
+              {visibleAreas.map((key) => (
                 <a
                   key={key}
-                  href={`/oripa?area=${key}`}
+                  href={validRegion ? `/oripa?region=${validRegion}&area=${key}` : `/oripa?area=${key}`}
                   className={`${styles.tab} ${area === key ? styles.tabActive : ''}`}
                 >
-                  {label}
+                  {AREA_LABELS[key]}
                 </a>
               ))}
             </nav>
@@ -212,21 +240,21 @@ export default async function OripaPage({
                 {totalPages > 1 && (
                   <div className={styles.pagination}>
                     {pageIndex > 1 ? (
-                      <a href={pageUrl(pageIndex - 1, area, resolvedSort, resolvedFilter)} className={styles.pageBtn}>← 前へ</a>
+                      <a href={pageUrl(pageIndex - 1, area, resolvedSort, resolvedFilter, validRegion)} className={styles.pageBtn}>← 前へ</a>
                     ) : (
                       <span className={`${styles.pageBtn} ${styles.pageBtnDisabled}`}>← 前へ</span>
                     )}
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                       <a
                         key={p}
-                        href={pageUrl(p, area, resolvedSort, resolvedFilter)}
+                        href={pageUrl(p, area, resolvedSort, resolvedFilter, validRegion)}
                         className={`${styles.pageBtn} ${p === pageIndex ? styles.pageBtnActive : ''}`}
                       >
                         {p}
                       </a>
                     ))}
                     {pageIndex < totalPages ? (
-                      <a href={pageUrl(pageIndex + 1, area, resolvedSort, resolvedFilter)} className={styles.pageBtn}>次へ →</a>
+                      <a href={pageUrl(pageIndex + 1, area, resolvedSort, resolvedFilter, validRegion)} className={styles.pageBtn}>次へ →</a>
                     ) : (
                       <span className={`${styles.pageBtn} ${styles.pageBtnDisabled}`}>次へ →</span>
                     )}

@@ -96,7 +96,48 @@
   50% { opacity: 0.4; transform: scale(0.8); }
 }
 
-/* ── Area Tabs ───────────────────────────────────────────────────────── */
+/* ── Region Tabs (tier-1) ────────────────────────────────────────────── */
+
+.regionTabs {
+  display: flex;
+  gap: 6px;
+  padding: 12px 0 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.regionTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.regionTab {
+  flex-shrink: 0;
+  padding: 6px 18px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text-muted);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.regionTab:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.regionTabActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0c14;
+  box-shadow: 0 0 16px rgba(245, 200, 66, 0.35);
+}
+
+/* ── Area Tabs (tier-2) ──────────────────────────────────────────────── */
 
 .areaTabs {
   display: flex;

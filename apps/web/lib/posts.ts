@@ -160,13 +160,15 @@ export async function getShopPosts(storeId: string): Promise<{
  * Returns [] if no stores have available stock in the last 14 days.
  * When `area` is a known area key, only that area is queried.
  */
-export async function getTodayOnSalePosts(area?: string): Promise<OripaPostSummary[]> {
+export async function getTodayOnSalePosts(area?: string, regionAreas?: string[]): Promise<OripaPostSummary[]> {
   const client = DynamoDBDocumentClient.from(
     new DynamoDBClient({ region: process.env.AWS_REGION ?? "ap-northeast-1" }),
   );
 
   const areasToQuery = area && AREAS.includes(area as typeof AREAS[number])
     ? [area as typeof AREAS[number]]
+    : regionAreas?.length
+    ? regionAreas.filter((a) => AREAS.includes(a as typeof AREAS[number])) as typeof AREAS[number][]
     : AREAS;
 
   try {

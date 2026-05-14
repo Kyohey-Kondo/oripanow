@@ -1,6 +1,6 @@
 # oripanow Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-05-07
+Auto-generated from all feature plans. Last updated: 2026-05-14
 
 ## Active Technologies
 - TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, AWS SDK v3 (DynamoDB DocumentClient)
@@ -24,6 +24,7 @@ Auto-generated from all feature plans. Last updated: 2026-05-07
 - N/A (infrastructure change only) (016-cloudfront-cache)
 - TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, Server Components), CSS Modules (019-card-sort-filter)
 - No changes — existing DynamoDB queries unchanged (019-card-sort-filter)
+- N/A — no schema changes (020-region-filter-tabs)
 
 ## Project Structure
 
@@ -75,6 +76,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 020-region-filter-tabs: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, Server Components), CSS Modules
 - 019-card-sort-filter: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, Server Components), CSS Modules
 - 017-card-ui-redesign: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
-- 016-cloudfront-cache: Added TypeScript 5.x / Node.js 22 LTS + AWS CDK v2 (`aws-cdk-lib`), `@aws-sdk/client-cloudfront` (new), `@aws-sdk/lib-dynamodb`
