@@ -1,5 +1,5 @@
 .wrapper {
-  display: none;
+  display: block;
   position: fixed;
   bottom: 16px;
   right: 16px;
@@ -11,10 +11,4 @@
   max-width: 100%;
   height: auto;
   display: block;
-}
-
-@media (max-width: 767px) {
-  .wrapper {
-    display: block;
-  }
 }
