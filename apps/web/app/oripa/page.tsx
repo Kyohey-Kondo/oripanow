@@ -136,13 +136,13 @@ export default async function OripaPage({
     <div className={styles.page}>
       {/* Header */}
       <header className={styles.header}>
-        <div className={styles.logo}>
+        <a href="/oripa" className={styles.logo} style={{ textDecoration: 'none' }}>
           <div className={styles.logoIcon}><Icon icon="mdi:cards-playing" width={20} height={20} /></div>
           <div>
             <div className={styles.logoText}>ORIPA NOW</div>
             <div className={styles.logoSub}>オリパ最新情報</div>
           </div>
-        </div>
+        </a>
         <div className={styles.liveBadge}>
           <div className={styles.liveDot} />
           LIVE
