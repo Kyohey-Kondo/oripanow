@@ -24,6 +24,7 @@ export default function InvitationPage() {
           ← トップへ戻る
         </Link>
       </header>
+      <p className={styles.promoDisclosure}>本サイトはプロモーションを含みます。</p>
       <div className={styles.container}>
         <h1 className={styles.title}>🎁 招待コード一覧</h1>
         <p className={styles.lead}>

@@ -148,6 +148,7 @@ export default async function OripaPage({
           LIVE
         </div>
       </header>
+      <p className={styles.promoDisclosure}>本サイトはプロモーションを含みます。</p>
 
       {/* Ad banner */}
       <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 24px 0' }}>

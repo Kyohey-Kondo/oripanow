@@ -24,6 +24,14 @@
 
 /* ── Header ─────────────────────────────────────────────────────────── */
 
+.promoDisclosure {
+  margin: 0;
+  padding: 6px 16px;
+  font-size: 12px;
+  color: #4b5563;
+  text-align: right;
+}
+
 .header {
   position: relative;
   z-index: 10;
