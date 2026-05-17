@@ -1,7 +1,7 @@
 import { TwitterApi, type TweetV2 } from 'twitter-api-v2';
 import type { StoreItem } from '@oripa-now/db';
 
-const TWEET_KEYWORDS = (process.env.TWEET_KEYWORDS ?? 'オリパ,おりぱ,oripa,ORIPA,オリジナルパック,mystery pack,mystery box,custom pack,blind pack,gacha pack')
+const TWEET_KEYWORDS = (process.env.TWEET_KEYWORDS ?? 'オリパ,おりぱ,oripa,ORIPA,オリジナルパック,オリパ在庫,ブロックオリパ,mystery pack,mystery box,custom pack,blind pack,gacha pack')
   .split(',')
   .map((k) => k.trim())
   .filter(Boolean);
@@ -29,7 +29,7 @@ export async function fetchTweetsForStore(
   const query = buildQuery(store.twitterUsername);
 
   const params: Parameters<typeof client.v2.search>[1] = {
-    max_results: 10,
+    max_results: 100,
     'tweet.fields': ['created_at', 'author_id', 'id'],
   };
 

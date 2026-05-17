@@ -44,8 +44,8 @@ function required(name: string): string {
 }
 
 function validateArea(area: string): asserts area is StoreItem['area'] {
-  if (area !== 'tokyo' && area !== 'omiya' && area !== 'akihabara' && area !== 'ikebukuro' && area !== 'shinjuku' && area !== 'namba' && area !== 'umeda') {
-    console.error(`Error: AREA must be "tokyo", "omiya", "akihabara", "ikebukuro", "shinjuku", "namba" or "umeda", got "${area}"`);
+  if (area !== 'tokyo' && area !== 'omiya' && area !== 'akihabara' && area !== 'ikebukuro' && area !== 'shinjuku' && area !== 'namba' && area !== 'umeda' && area !== 'kawagoe') {
+    console.error(`Error: AREA must be "tokyo", "omiya", "akihabara", "ikebukuro", "shinjuku", "kawagoe", "namba" or "umeda", got "${area}"`);
     process.exit(1);
   }
 }

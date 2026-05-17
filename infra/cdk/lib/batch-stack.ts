@@ -123,7 +123,7 @@ export class BatchStack extends cdk.Stack {
         ORIPA_POSTS_TABLE_NAME: oripaPostsTable.tableName,
         TWEETS_TABLE_NAME: tweetsTable.tableName,
         TWITTER_BEARER_TOKEN: twitterBearerToken,
-        TWEET_KEYWORDS: 'オリパ,おりぱ,oripa,ORIPA,オリジナルパック,mystery pack,mystery box,custom pack,blind pack,gacha pack',
+        TWEET_KEYWORDS: 'オリパ,おりぱ,oripa,ORIPA,オリジナルパック,オリパ在庫,ブロックオリパ,mystery pack,mystery box,custom pack,blind pack,gacha pack',
         GAME_KEYWORDS: 'ポケカ,ポケモンカード,ポケモン,Pokemon,Pokémon,PTCG,PKM',
       },
       logGroup,

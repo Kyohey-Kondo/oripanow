@@ -108,7 +108,7 @@ async function clearLastFetchedTweetIds(stores: StoreItem[]): Promise<void> {
 
 const TWEET_KEYWORDS = (
   process.env.TWEET_KEYWORDS ??
-  'オリパ,おりぱ,oripa,ORIPA,オリジナルパック,mystery pack,mystery box,custom pack,blind pack,gacha pack'
+  'オリパ,おりぱ,oripa,ORIPA,オリジナルパック,オリパ在庫,ブロックオリパ,mystery pack,mystery box,custom pack,blind pack,gacha pack'
 )
   .split(',')
   .map((k) => k.trim())
