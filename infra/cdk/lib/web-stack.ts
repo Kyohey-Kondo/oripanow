@@ -111,7 +111,7 @@ export class WebStack extends cdk.Stack {
       minTtl: cdk.Duration.hours(24),
       maxTtl: cdk.Duration.hours(24),
       queryStringBehavior: cloudfront.CacheQueryStringBehavior.allowList('area', 'region', 'page', 'sort', 'filter'),
-      headerBehavior: cloudfront.CacheHeaderBehavior.none(),
+      headerBehavior: cloudfront.CacheHeaderBehavior.allowList('RSC', 'Next-Router-State-Tree', 'Next-Router-Prefetch'),
       cookieBehavior: cloudfront.CacheCookieBehavior.none(),
       enableAcceptEncodingGzip: true,
       enableAcceptEncodingBrotli: true,

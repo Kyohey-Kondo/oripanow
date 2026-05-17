@@ -1,6 +1,6 @@
 # oripanow Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-05-14
+Auto-generated from all feature plans. Last updated: 2026-05-17
 
 ## Active Technologies
 - TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, AWS SDK v3 (DynamoDB DocumentClient)
@@ -76,6 +76,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 021-user-notification-bar: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 020-region-filter-tabs: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, Server Components), CSS Modules
 - 019-card-sort-filter: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, Server Components), CSS Modules
-- 017-card-ui-redesign: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
