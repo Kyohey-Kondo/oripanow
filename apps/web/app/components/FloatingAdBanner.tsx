@@ -6,10 +6,10 @@ import styles from './FloatingAdBanner.module.css';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const showAd = () => (window as any).a8adscript?.('body').showAd({
-  req: { mat: '4B1THW+4QVFEA+5I52+BWGDT', alt: '商品リンク', id: '4AguhTp-g7-vjvN32r' },
+  req: { mat: '4B1THW+4QVFEA+5I52+BWGDT', alt: '商品リンク', id: '4AguhTp-g7-vjYMzr5' },
   goods: {
-    ejp: 'h' + 'ttps://orikuji.com/gacha/pokemon/ga0011_202605_162?utm_source=a8&utm_source=a8&utm_medium=affiliate&utm_medium=affiliate&utm_campaign=2yyi5&utm_campaign=260425364287&a8=v4ucY4bPLXAUKyAcbsZSSy_5RP0dg0uafsZywXBJ4rkPL-u1htzaituaKt05Q5zTHr8XB3u_H4ucms00000025679001',
-    imu: 'h' + 'ttps://media.orikuji.com/gacha/ga0011_202605_162_thumb.webp',
+    ejp: 'h' + 'ttps://orikuji.com/gacha/pokemon/ga0011_202603_576_2',
+    imu: 'h' + 'ttps://media.orikuji.com/gacha/ga0011_202603_576_thumb.webp',
   },
 });
 
@@ -49,7 +49,7 @@ export function FloatingAdBanner() {
       >
         ×
       </button>
-      <span className="a8ad 4AguhTp-g7-vjvN32r"></span>
+      <span className="a8ad 4AguhTp-g7-vjYMzr5"></span>
       <Script
         src="//statics.a8.net/ad/ad.js"
         strategy="lazyOnload"
