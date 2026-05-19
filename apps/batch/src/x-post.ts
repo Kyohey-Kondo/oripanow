@@ -23,7 +23,6 @@ const AREA_HASHTAGS: Record<Area, string> = {
   omiya: '#大宮',
 };
 
-const SITE_URL = process.env.SITE_URL ?? 'https://oripanow.app';
 
 function getYesterdayJST(): string {
   const d = new Date();
@@ -41,12 +40,10 @@ function getYesterdayJST(): string {
 function composeTweet(area: Area, count: number): string {
   const label = AREA_LABELS[area];
   const hashtag = AREA_HASHTAGS[area];
-  const url = `${SITE_URL}/oripa?area=${area}`;
   return [
     `【${label}】本日のオリパ情報が${count}件更新されました🎴`,
     '',
-    '詳細・最新在庫はこちら👇',
-    url,
+    '詳細・最新在庫はプロフィールリンクから👆',
     '',
     `#ポケカ #ポケモン #オリパ ${hashtag}`,
   ].join('\n');
