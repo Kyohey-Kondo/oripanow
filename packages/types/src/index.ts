@@ -1,3 +1,24 @@
+export interface GiveawayPrize {
+  type: "box" | "single" | "other";
+  name: string;
+  count?: number;
+}
+
+export interface GiveawayPostSummary {
+  postId: string;
+  tweetId: string;
+  twitterUsername: string;
+  sourceType: "store" | "search";
+  storeId?: string;
+  storeName?: string;
+  prizes: GiveawayPrize[];
+  conditions?: string;
+  deadline?: string;        // YYYY-MM-DD
+  daysRemaining?: number;   // Computed from deadline − today
+  createdAt: string;
+  status: "active" | "ended" | "upcoming";
+}
+
 export interface OripaPostSummary {
   postId: string;
   storeId: string;

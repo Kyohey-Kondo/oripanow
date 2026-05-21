@@ -16,13 +16,13 @@
 
 **Purpose**: TypeScript types, DynamoDB schema, and CDK infrastructure — blocking prerequisites for all phases.
 
-- [ ] T001 Add `GiveawayTweetItem`, `GiveawayPostItem`, `GiveawayPrize` types and extend `TABLE_NAMES` / `GSI` constants in `packages/db/schema/index.ts`
-- [ ] T002 Add `GiveawayPostSummary` and `GiveawayPrize` to `packages/types/src/index.ts`
-- [ ] T003 Create `packages/db/queries/giveaway-posts.ts` — export `queryActiveGiveawaysForDateRange()` using GSI1 fan-out pattern
-- [ ] T004 Add `{env}-giveaway-tweets` and `{env}-giveaway-posts` DynamoDB tables (with GSI1, GSI2) to `infra/cdk/lib/batch-stack.ts`
-- [ ] T005 Add `fetch-giveaway` and `analyze-giveaway` Lambda functions with EventBridge schedules to `infra/cdk/lib/batch-stack.ts`
-- [ ] T006 Grant `giveaway-posts` read permissions and set `GIVEAWAY_POSTS_TABLE_NAME` env var on the Next.js Lambda in `infra/cdk/lib/web-stack.ts`
-- [ ] T007 Run `pnpm typecheck` to verify all type additions compile cleanly
+- [X] T001 Add `GiveawayTweetItem`, `GiveawayPostItem`, `GiveawayPrize` types and extend `TABLE_NAMES` / `GSI` constants in `packages/db/schema/index.ts`
+- [X] T002 Add `GiveawayPostSummary` and `GiveawayPrize` to `packages/types/src/index.ts`
+- [X] T003 Create `packages/db/queries/giveaway-posts.ts` — export `queryActiveGiveawaysForDateRange()` using GSI1 fan-out pattern
+- [X] T004 Add `{env}-giveaway-tweets` and `{env}-giveaway-posts` DynamoDB tables (with GSI1, GSI2) to `infra/cdk/lib/batch-stack.ts`
+- [X] T005 Add `fetch-giveaway` and `analyze-giveaway` Lambda functions with EventBridge schedules to `infra/cdk/lib/batch-stack.ts`
+- [X] T006 Grant `giveaway-posts` read permissions and set `GIVEAWAY_POSTS_TABLE_NAME` env var on the Next.js Lambda in `infra/cdk/lib/web-stack.ts`
+- [X] T007 Run `pnpm typecheck` to verify all type additions compile cleanly
 
 **Checkpoint**: Infrastructure types and CDK definitions are complete; no runtime code yet.
 
@@ -34,11 +34,11 @@
 
 **⚠️ CRITICAL**: Frontend development (Phase 3+) can use empty-state UI before this phase, but real data requires this pipeline.
 
-- [ ] T008 Create `apps/batch/src/parse-giveaway.ts` — define `classify_giveaway_tweet` Bedrock tool schema and export `analyzeGiveawayTweet(client, tweet, todayJST)` mirroring `parse.ts`
-- [ ] T009 Create `apps/batch/src/save-giveaway.ts` — implement `saveGiveawayTweets()`, `saveGiveawayPost()`, `markGiveawayTweetProcessed()` with `attribute_not_exists` idempotency and sentinel logic for unknown deadlines
-- [ ] T010 Create `apps/batch/src/fetch-giveaway.ts` — implement Strategy A (per-store `from:{username}` query) and Strategy B (broad keyword search), dedup by `tweetId`, write to `giveaway-tweets` table; manage search cursor via `GIVEAWAY_SEARCH_CURSOR` DynamoDB item
-- [ ] T011 Create `apps/batch/src/analyze-giveaway.ts` — Lambda handler: query GSI2 for `UNPROCESSED` tweets (batch=50), call `analyzeGiveawayTweet()`, save or skip, mark processed, invalidate CloudFront `/giveaway*`
-- [ ] T012 Run `pnpm typecheck` and `pnpm build` across all workspaces to verify batch pipeline compiles
+- [X] T008 Create `apps/batch/src/parse-giveaway.ts` — define `classify_giveaway_tweet` Bedrock tool schema and export `analyzeGiveawayTweet(client, tweet, todayJST)` mirroring `parse.ts`
+- [X] T009 Create `apps/batch/src/save-giveaway.ts` — implement `saveGiveawayTweets()`, `saveGiveawayPost()`, `markGiveawayTweetProcessed()` with `attribute_not_exists` idempotency and sentinel logic for unknown deadlines
+- [X] T010 Create `apps/batch/src/fetch-giveaway.ts` — implement Strategy A (per-store `from:{username}` query) and Strategy B (broad keyword search), dedup by `tweetId`, write to `giveaway-tweets` table; manage search cursor via `GIVEAWAY_SEARCH_CURSOR` DynamoDB item
+- [X] T011 Create `apps/batch/src/analyze-giveaway.ts` — Lambda handler: query GSI2 for `UNPROCESSED` tweets (batch=50), call `analyzeGiveawayTweet()`, save or skip, mark processed, invalidate CloudFront `/giveaway*`
+- [X] T012 Run `pnpm typecheck` and `pnpm build` across all workspaces to verify batch pipeline compiles
 
 **Checkpoint**: Pipeline can be manually invoked via Lambda console to seed `giveaway-posts` with real data.
 
@@ -50,11 +50,11 @@
 
 **Independent Test**: Run dev server, visit `http://localhost:3000/giveaway` — giveaway cards are displayed (or empty state if no data).
 
-- [ ] T013 Create `apps/web/lib/giveaways.ts` — implement `getActiveGiveaways()`, `mapToGiveawaySummary()`, `sortGiveaways()`, `filterGiveaways()` using `queryActiveGiveawaysForDateRange()`
-- [ ] T014 Create `apps/web/app/giveaway/giveaway.module.css` — styles for GiveawayCard (color bars, prize type badges, deadline badges, conditions row); follow `oripa.module.css` palette
-- [ ] T015 [P] Create `apps/web/app/giveaway/components/GiveawayCard.tsx` — displays prize list (type badge + name + winner count), conditions, deadline with days-remaining badge, tweet link button
-- [ ] T016 Create `apps/web/app/giveaway/page.tsx` — Server Component with `dynamic = 'force-dynamic'`, calls `getActiveGiveaways()`, renders GiveawayCard grid, includes metadata (title/description)
-- [ ] T017 Verify UI with Playwright: `pnpm --filter @oripa-now/web dev`, navigate to `/giveaway`, take screenshot, confirm empty state message and page layout
+- [X] T013 Create `apps/web/lib/giveaways.ts` — implement `getActiveGiveaways()`, `mapToGiveawaySummary()`, `sortGiveaways()`, `filterGiveaways()` using `queryActiveGiveawaysForDateRange()`
+- [X] T014 Create `apps/web/app/giveaway/giveaway.module.css` — styles for GiveawayCard (color bars, prize type badges, deadline badges, conditions row); follow `oripa.module.css` palette
+- [X] T015 [P] Create `apps/web/app/giveaway/components/GiveawayCard.tsx` — displays prize list (type badge + name + winner count), conditions, deadline with days-remaining badge, tweet link button
+- [X] T016 Create `apps/web/app/giveaway/page.tsx` — Server Component with `dynamic = 'force-dynamic'`, calls `getActiveGiveaways()`, renders GiveawayCard grid, includes metadata (title/description)
+- [X] T017 Verify UI with Playwright: `pnpm --filter @oripa-now/web dev`, navigate to `/giveaway`, take screenshot, confirm empty state message and page layout
 
 **Checkpoint**: `/giveaway` page renders correctly with empty state and card layout. User Story 1 is independently testable.
 
@@ -66,9 +66,9 @@
 
 **Independent Test**: On `/giveaway`, click "BOXのみ" — only BOX giveaway cards remain visible.
 
-- [ ] T018 Create `apps/web/app/giveaway/components/GiveawaySortFilterToolbar.tsx` — filter buttons (すべて / BOXのみ / シングルのみ) and sort buttons (締め切り順 / 新着順); follows `SortFilterToolbar.tsx` pattern
-- [ ] T019 Wire `searchParams` for `filter` and `sort` into `apps/web/app/giveaway/page.tsx` — pass to `filterGiveaways()` and `sortGiveaways()` in `apps/web/lib/giveaways.ts`
-- [ ] T020 Verify with Playwright: filter "BOXのみ" shows only box cards; filter "シングルのみ" shows only single cards; "すべて" restores full list
+- [X] T018 Create `apps/web/app/giveaway/components/GiveawaySortFilterToolbar.tsx` — filter buttons (すべて / BOXのみ / シングルのみ) and sort buttons (締め切り順 / 新着順); follows `SortFilterToolbar.tsx` pattern
+- [X] T019 Wire `searchParams` for `filter` and `sort` into `apps/web/app/giveaway/page.tsx` — pass to `filterGiveaways()` and `sortGiveaways()` in `apps/web/lib/giveaways.ts`
+- [X] T020 Verify with Playwright: filter "BOXのみ" shows only box cards; filter "シングルのみ" shows only single cards; "すべて" restores full list
 
 **Checkpoint**: Filter UI works correctly for all prize type options.
 
@@ -80,8 +80,8 @@
 
 **Independent Test**: With multiple test giveaway records, verify the default order is deadline ascending, and "新着順" switches to newest-first.
 
-- [ ] T021 Verify `sortGiveaways()` in `apps/web/lib/giveaways.ts` handles `deadline_asc` (soonest first, unknown last) and `newest` (by `createdAt` desc) correctly
-- [ ] T022 Verify with Playwright: default page order is deadline ascending; selecting "新着順" reorders correctly
+- [X] T021 Verify `sortGiveaways()` in `apps/web/lib/giveaways.ts` handles `deadline_asc` (soonest first, unknown last) and `newest` (by `createdAt` desc) correctly
+- [X] T022 Verify with Playwright: default page order is deadline ascending; selecting "新着順" reorders correctly
 
 **Checkpoint**: Sort behavior matches spec for all cases including unknown deadlines.
 
@@ -93,7 +93,7 @@
 
 **Independent Test**: Click the tweet link on a card — original tweet opens in a new tab.
 
-- [ ] T023 Verify `GiveawayCard.tsx` constructs the correct tweet URL (`https://x.com/{twitterUsername}/status/{tweetId}`) and opens in `target="_blank"` with `rel="noopener noreferrer"`
+- [X] T023 Verify `GiveawayCard.tsx` constructs the correct tweet URL (`https://x.com/{twitterUsername}/status/{tweetId}`) and opens in `target="_blank"` with `rel="noopener noreferrer"`
 
 **Checkpoint**: All tweet links are correct and functional.
 
@@ -101,10 +101,10 @@
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-- [ ] T024 [P] Add `/giveaway` navigation link to `apps/web/app/components/Footer.tsx`
-- [ ] T025 [P] Add `GIVEAWAY_POSTS_TABLE_NAME` env var to `apps/web/.env.local` (for local dev) and document in `infra/cdk/.env.example`
-- [ ] T026 Run final `pnpm typecheck && pnpm build` — all workspaces must pass
-- [ ] T027 Update `specs/022-pokeca-giveaway-page/checklists/requirements.md` — mark all items `[X]`
+- [X] T024 [P] Add `/giveaway` navigation link to `apps/web/app/components/Footer.tsx`
+- [X] T025 [P] Add `GIVEAWAY_POSTS_TABLE_NAME` env var to `apps/web/.env.local` (for local dev) and document in `infra/cdk/.env.example`
+- [X] T026 Run final `pnpm typecheck && pnpm build` — all workspaces must pass
+- [X] T027 Update `specs/022-pokeca-giveaway-page/checklists/requirements.md` — mark all items `[X]`
 
 ---
 
