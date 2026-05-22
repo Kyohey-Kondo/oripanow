@@ -298,7 +298,7 @@ export class BatchStack extends cdk.Stack {
       bundling: { minify: true, sourceMap: false, externalModules: [] },
     });
 
-    storesTable.grantReadData(fetchGiveawayFn);
+    storesTable.grantReadWriteData(fetchGiveawayFn);
     giveawayTweetsTable.grantReadWriteData(fetchGiveawayFn);
 
     // EventBridge: 10:00 JST (01:00 UTC)

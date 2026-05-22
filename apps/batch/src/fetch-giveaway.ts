@@ -80,6 +80,8 @@ async function fetchFromBroadSearch(
   const params: Parameters<typeof twitterClient.v2.search>[1] = {
     max_results: 100,
     'tweet.fields': ['created_at', 'author_id', 'id'],
+    expansions: ['author_id'],
+    'user.fields': ['username'],
   };
 
   if (sinceId) {
@@ -92,10 +94,16 @@ async function fetchFromBroadSearch(
   const paginator = await twitterClient.v2.search(BROAD_SEARCH_QUERY, params);
   const tweets: TweetV2[] = paginator.data.data ?? [];
 
+  // Build author_id → username map from expansions
+  const usersById = new Map<string, string>();
+  for (const user of (paginator.data.includes?.users ?? [])) {
+    if (user.id && user.username) usersById.set(user.id, user.username);
+  }
+
   const items: GiveawayTweetItem[] = tweets.map((tweet) => ({
     tweetId: tweet.id,
     sourceType: 'search' as const,
-    twitterUsername: tweet.author_id ?? 'unknown',
+    twitterUsername: (tweet.author_id && usersById.get(tweet.author_id)) ?? tweet.author_id ?? 'unknown',
     content: tweet.text,
     tweetedAt: tweet.created_at ?? fetchedAt,
     fetchedAt,
