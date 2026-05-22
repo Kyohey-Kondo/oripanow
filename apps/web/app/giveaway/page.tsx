@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Icon } from '@iconify/react';
 import { Footer } from '../components/Footer';
+import { PageNav } from '../components/PageNav';
 import {
   getActiveGiveaways,
   VALID_GIVEAWAY_SORTS,
@@ -62,6 +63,7 @@ export default async function GiveawayPage({
         </div>
         <div className={styles.pageTitle}>プレゼント企画まとめ</div>
       </header>
+      <PageNav current="giveaway" />
 
       <main className={styles.main}>
         <GiveawaySortFilterToolbar currentSort={sort} currentFilter={filter} />
