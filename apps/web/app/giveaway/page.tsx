@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Icon } from '@iconify/react';
 import { Footer } from '../components/Footer';
 import { PageNav } from '../components/PageNav';
+import { AdBanner } from '../components/AdBanner';
 import {
   getActiveGiveaways,
   VALID_GIVEAWAY_SORTS,
@@ -64,6 +65,14 @@ export default async function GiveawayPage({
         <div className={styles.pageTitle}>プレゼント企画まとめ</div>
       </header>
       <PageNav current="giveaway" />
+
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 24px 0' }}>
+        <AdBanner
+          href="https://px.a8.net/svt/ejp?a8mat=4B1THW+4QVFEA+5I52+5Z6WX"
+          imgSrc="https://www25.a8.net/svt/bgt?aid=260425364287&wid=001&eno=01&mid=s00000025679001004000&mc=1"
+          trackingSrc="https://www13.a8.net/0.gif?a8mat=4B1THW+4QVFEA+5I52+5Z6WX"
+        />
+      </div>
 
       <main className={styles.main}>
         <GiveawaySortFilterToolbar currentSort={sort} currentFilter={filter} />
