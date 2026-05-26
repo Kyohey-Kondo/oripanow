@@ -11,7 +11,7 @@ export function AdBanner({ href, imgSrc, trackingSrc, width = 300, height = 250,
   return (
     <div style={{ textAlign: 'center', ...style }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <a href={href} rel="nofollow">
+      <a href={href} target="_blank" rel="nofollow noopener">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img style={{ border: 0 }} width={width} height={height} alt="" src={imgSrc} />
       </a>
