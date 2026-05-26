@@ -243,6 +243,127 @@ export class BatchStack extends cdk.Stack {
       targets: [new eventsTargets.LambdaFunction(xPostFn)],
     });
 
+    // ─── DynamoDB: giveaway-tweets ───────────────────────────────────────────
+    // PK: tweetId (Twitter tweet ID)
+    // GSI2: processStatus → fetchedAt  (sparse: unprocessed batch queue)
+    const giveawayTweetsTable = new dynamodb.Table(this, 'GiveawayTweetsTable', {
+      tableName: `${deployEnv}-giveaway-tweets`,
+      partitionKey: { name: 'tweetId', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    giveawayTweetsTable.addGlobalSecondaryIndex({
+      indexName: 'GSI2',
+      partitionKey: { name: 'processStatus', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'fetchedAt', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // ─── DynamoDB: giveaway-posts ────────────────────────────────────────────
+    // PK: postId (Twitter tweet ID)
+    // GSI1: statusDeadline → createdAt  (active giveaways by deadline date)
+    const giveawayPostsTable = new dynamodb.Table(this, 'GiveawayPostsTable', {
+      tableName: `${deployEnv}-giveaway-posts`,
+      partitionKey: { name: 'postId', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    giveawayPostsTable.addGlobalSecondaryIndex({
+      indexName: 'GSI1',
+      partitionKey: { name: 'statusDeadline', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'createdAt', type: dynamodb.AttributeType.STRING },
+      projectionType: dynamodb.ProjectionType.ALL,
+    });
+
+    // ─── Lambda: fetch-giveaway ──────────────────────────────────────────────
+    const fetchGiveawayFn = new lambdaNodejs.NodejsFunction(this, 'FetchGiveawayFunction', {
+      functionName: `${deployEnv}-oripa-now-fetch-giveaway`,
+      entry: path.join(__dirname, '../../../apps/batch/src/fetch-giveaway.ts'),
+      handler: 'handler',
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: cdk.Duration.minutes(5),
+      environment: {
+        DEPLOY_ENV: deployEnv,
+        STORES_TABLE_NAME: storesTable.tableName,
+        GIVEAWAY_TWEETS_TABLE_NAME: giveawayTweetsTable.tableName,
+        TWITTER_BEARER_TOKEN: twitterBearerToken,
+      },
+      logGroup: new logs.LogGroup(this, 'FetchGiveawayLogGroup', {
+        logGroupName: `/aws/lambda/${deployEnv}-oripa-now-fetch-giveaway`,
+        retention: logs.RetentionDays.ONE_WEEK,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+      }),
+      bundling: { minify: true, sourceMap: false, externalModules: [] },
+    });
+
+    storesTable.grantReadWriteData(fetchGiveawayFn);
+    giveawayTweetsTable.grantReadWriteData(fetchGiveawayFn);
+
+    // EventBridge: 10:00 JST (01:00 UTC)
+    new events.Rule(this, 'FetchGiveawayScheduleRule', {
+      ruleName: `${deployEnv}-oripa-now-fetch-giveaway`,
+      schedule: events.Schedule.cron({ hour: '1', minute: '0' }),
+      targets: [new eventsTargets.LambdaFunction(fetchGiveawayFn)],
+    });
+
+    // ─── Lambda: analyze-giveaway ────────────────────────────────────────────
+    const analyzeGiveawayFn = new lambdaNodejs.NodejsFunction(this, 'AnalyzeGiveawayFunction', {
+      functionName: `${deployEnv}-oripa-now-analyze-giveaway`,
+      entry: path.join(__dirname, '../../../apps/batch/src/analyze-giveaway.ts'),
+      handler: 'handler',
+      runtime: lambda.Runtime.NODEJS_22_X,
+      timeout: cdk.Duration.minutes(5),
+      environment: {
+        DEPLOY_ENV: deployEnv,
+        STORES_TABLE_NAME: storesTable.tableName,
+        GIVEAWAY_TWEETS_TABLE_NAME: giveawayTweetsTable.tableName,
+        GIVEAWAY_POSTS_TABLE_NAME: giveawayPostsTable.tableName,
+        ANTHROPIC_MODEL: 'jp.anthropic.claude-haiku-4-5-20251001-v1:0',
+        ANALYZE_BATCH_SIZE: '50',
+        ...(cloudFrontDistributionId ? { CLOUDFRONT_DISTRIBUTION_ID: cloudFrontDistributionId } : {}),
+      },
+      logGroup: new logs.LogGroup(this, 'AnalyzeGiveawayLogGroup', {
+        logGroupName: `/aws/lambda/${deployEnv}-oripa-now-analyze-giveaway`,
+        retention: logs.RetentionDays.ONE_WEEK,
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+      }),
+      bundling: { minify: true, sourceMap: false, externalModules: [] },
+    });
+
+    storesTable.grantReadData(analyzeGiveawayFn);
+    giveawayTweetsTable.grantReadWriteData(analyzeGiveawayFn);
+    giveawayPostsTable.grantReadWriteData(analyzeGiveawayFn);
+
+    analyzeGiveawayFn.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['bedrock:InvokeModel'],
+        resources: [
+          'arn:aws:bedrock:*::foundation-model/anthropic.*',
+          `arn:aws:bedrock:*:${this.account}:inference-profile/*`,
+        ],
+      }),
+    );
+
+    if (cloudFrontDistributionId) {
+      analyzeGiveawayFn.addToRolePolicy(
+        new iam.PolicyStatement({
+          actions: ['cloudfront:CreateInvalidation'],
+          resources: [
+            `arn:aws:cloudfront::${this.account}:distribution/${cloudFrontDistributionId}`,
+          ],
+        }),
+      );
+    }
+
+    // EventBridge: 10:10 JST (01:10 UTC)
+    new events.Rule(this, 'AnalyzeGiveawayScheduleRule', {
+      ruleName: `${deployEnv}-oripa-now-analyze-giveaway`,
+      schedule: events.Schedule.cron({ hour: '1', minute: '10' }),
+      targets: [new eventsTargets.LambdaFunction(analyzeGiveawayFn)],
+    });
+
     // ─── Outputs ─────────────────────────────────────────────────────────────
     new cdk.CfnOutput(this, 'BatchFunctionName', {
       value: batchFn.functionName,

@@ -3,6 +3,7 @@ import Script from 'next/script';
 import type { Metadata } from 'next';
 import { Icon } from '@iconify/react';
 import { AdBanner } from '../components/AdBanner';
+import { PageNav } from '../components/PageNav';
 import {
   getTodayOnSalePosts,
   sortPosts,
@@ -148,6 +149,7 @@ export default async function OripaPage({
           LIVE
         </div>
       </header>
+      <PageNav current="oripa" />
       <p className={styles.promoDisclosure}>本サイトはプロモーションを含みます。</p>
 
       {/* Ad banner */}

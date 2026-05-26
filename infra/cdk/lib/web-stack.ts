@@ -24,8 +24,9 @@ export class WebStack extends cdk.Stack {
 
     const { deployEnv, domainName, certificateArn } = props;
 
-    // DynamoDB: batch-stack が作成した oripa-posts テーブル（読み取り専用）
+    // DynamoDB: batch-stack が作成した oripa-posts / giveaway-posts テーブル（読み取り専用）
     const oripaPostsTableName = `${deployEnv}-oripa-posts`;
+    const giveawayPostsTableName = `${deployEnv}-giveaway-posts`;
 
     // S3: static assets
     const assetBucket = new s3.Bucket(this, 'AssetBucket', {
@@ -65,6 +66,7 @@ export class WebStack extends cdk.Stack {
         AWS_LWA_PORT: '3000',
         PORT: '3000',
         ORIPA_POSTS_TABLE_NAME: oripaPostsTableName,
+        GIVEAWAY_POSTS_TABLE_NAME: giveawayPostsTableName,
       },
     });
 
@@ -80,6 +82,11 @@ export class WebStack extends cdk.Stack {
       resource: 'table',
       resourceName: storesTableName,
     });
+    const giveawayPostsTableArn = cdk.Stack.of(this).formatArn({
+      service: 'dynamodb',
+      resource: 'table',
+      resourceName: giveawayPostsTableName,
+    });
     nextjsFn.addToRolePolicy(new iam.PolicyStatement({
       actions: [
         'dynamodb:GetItem',
@@ -91,6 +98,7 @@ export class WebStack extends cdk.Stack {
       resources: [
         oripaPostsTableArn, `${oripaPostsTableArn}/index/*`,
         storesTableArn, `${storesTableArn}/index/*`,
+        giveawayPostsTableArn, `${giveawayPostsTableArn}/index/*`,
       ],
     }));
 

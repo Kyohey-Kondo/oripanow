@@ -1,6 +1,6 @@
 # oripanow Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-05-17
+Auto-generated from all feature plans. Last updated: 2026-05-21
 
 ## Active Technologies
 - TypeScript 5.x / Node.js 22 LTS + pnpm 9.x, Turborepo, Next.js 15, AWS CDK v2, AWS SDK v3 (DynamoDB DocumentClient)
@@ -25,6 +25,8 @@ Auto-generated from all feature plans. Last updated: 2026-05-17
 - TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, Server Components), CSS Modules (019-card-sort-filter)
 - No changes — existing DynamoDB queries unchanged (019-card-sort-filter)
 - N/A — no schema changes (020-region-filter-tabs)
+- TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x + Next.js 15 (App Router, `force-dynamic`) + `@aws-sdk/lib-dynamodb`, `@aws-sdk/client-bedrock-runtime`, `twitter-api-v2`, `@oripa-now/db`, `@oripa-now/types`, AWS CDK v2 (022-pokeca-giveaway-page)
+- DynamoDB — two new tables: `{env}-giveaway-tweets` (raw), `{env}-giveaway-posts` (analyzed) (022-pokeca-giveaway-page)
 
 ## Project Structure
 
@@ -76,6 +78,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
+- 022-pokeca-giveaway-page: Added TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x + Next.js 15 (App Router, `force-dynamic`) + `@aws-sdk/lib-dynamodb`, `@aws-sdk/client-bedrock-runtime`, `twitter-api-v2`, `@oripa-now/db`, `@oripa-now/types`, AWS CDK v2
 - 021-user-notification-bar: Added [if applicable, e.g., PostgreSQL, CoreData, files or N/A]
 - 020-region-filter-tabs: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, Server Components), CSS Modules
-- 019-card-sort-filter: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, Server Components), CSS Modules
