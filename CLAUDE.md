@@ -73,6 +73,7 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 ## UI Development Rules
 
 - **Always verify UI changes with Playwright before deploying.** Take a screenshot and confirm the layout looks correct.
+- **Save all screenshots and Playwright artifacts to `.e2e/`** (gitignored). Do not save them to the repo root.
 
 ## Pages (apps/web/app)
 
