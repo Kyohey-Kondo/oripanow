@@ -1,6 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHmac } from 'crypto';
 
 const BLOCKED_PATHS = ['/admin', '/dashboard', '/manager', '/admin-internal'];
+const COOKIE_NAME = 'admin_session';
+
+function makeSessionToken(): string {
+  const secret = process.env.ADMIN_PASS ?? 'fallback';
+  return createHmac('sha256', secret).update('admin-authenticated').digest('hex');
+}
+
+function hasValidSessionCookie(request: NextRequest): boolean {
+  const cookie = request.cookies.get(COOKIE_NAME)?.value;
+  return !!cookie && cookie === makeSessionToken();
+}
+
+function setSessionCookie(response: NextResponse): void {
+  response.cookies.set(COOKIE_NAME, makeSessionToken(), {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 60 * 8, // 8 hours
+    secure: process.env.NODE_ENV === 'production',
+  });
+}
 
 function checkLocalAuth(request: NextRequest): boolean {
   const auth = request.headers.get('Authorization');
@@ -29,9 +51,11 @@ export function middleware(request: NextRequest) {
   // Lambda is behind OAC so this header can only originate from CloudFront.
   // Strip the first path segment (the hash, already validated by CloudFront) to get the subpath.
   if (request.headers.get('x-admin-validated') === 'true') {
-    const segments = pathname.split('/').filter(Boolean); // ['83de833b', 'giveaway'] or ['83de833b']
-    const subpath = '/' + segments.slice(1).join('/');    // '/giveaway' or '/'
-    return NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
+    const segments = pathname.split('/').filter(Boolean);
+    const subpath = '/' + segments.slice(1).join('/');
+    const response = NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
+    if (!hasValidSessionCookie(request)) setSessionCookie(response);
+    return response;
   }
 
   // Local dev: no CloudFront Function, validate directly with hash path + Basic Auth.
@@ -43,7 +67,9 @@ export function middleware(request: NextRequest) {
       });
     }
     const subpath = pathname.slice(`/${hash}`.length) || '/';
-    return NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
+    const response = NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
+    if (!hasValidSessionCookie(request)) setSessionCookie(response);
+    return response;
   }
 
   return NextResponse.next();

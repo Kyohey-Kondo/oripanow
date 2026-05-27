@@ -4,7 +4,8 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { SSMClient, GetParametersCommand } from "@aws-sdk/client-ssm";
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
+import { headers, cookies } from "next/headers";
+import { createHmac } from "crypto";
 import { TwitterApi } from "twitter-api-v2";
 import type { AdminActions } from "@oripa-now/types";
 
@@ -70,30 +71,22 @@ async function getTwitterClient(): Promise<TwitterApi> {
   });
 }
 
-/** Re-verify admin auth inside the action — do not rely on middleware alone. */
-async function assertAdmin(): Promise<void> {
-  const h = await headers();
+function makeSessionToken(): string {
+  const secret = process.env.ADMIN_PASS ?? "fallback";
+  return createHmac("sha256", secret).update("admin-authenticated").digest("hex");
+}
 
-  // Production: CloudFront Function sets this header after validating Basic Auth.
+/** Re-verify admin auth inside the action via HMAC session cookie. */
+async function assertAdmin(): Promise<void> {
+  const jar = await cookies();
+  const cookie = jar.get("admin_session")?.value;
+  if (cookie && cookie === makeSessionToken()) return;
+
+  // Fallback for local dev without cookie (e.g. first request before cookie is set)
+  const h = await headers();
   if (h.get("x-admin-validated") === "true") return;
 
-  // Local dev: verify Basic Auth credentials directly.
-  const auth = h.get("authorization") ?? "";
-  if (!auth.startsWith("Basic ")) throw new Error("Unauthorized");
-  const decoded = Buffer.from(auth.slice(6), "base64").toString("utf-8");
-  const sep = decoded.indexOf(":");
-  if (sep === -1) throw new Error("Unauthorized");
-  const user = decoded.slice(0, sep);
-  const pass = decoded.slice(sep + 1);
-  const expectedUser = process.env.ADMIN_USER ?? "";
-  const expectedPass = process.env.ADMIN_PASS ?? "";
-  const ok =
-    expectedUser.length > 0 &&
-    user.length === expectedUser.length &&
-    pass.length === expectedPass.length &&
-    user === expectedUser &&
-    pass === expectedPass;
-  if (!ok) throw new Error("Unauthorized");
+  throw new Error("Unauthorized");
 }
 
 async function persistAdminAction(
