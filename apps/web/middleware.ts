@@ -77,8 +77,10 @@ export async function middleware(request: NextRequest) {
   // Strip the first path segment (the hash, already validated by CloudFront) to get the subpath.
   if (request.headers.get('x-admin-validated') === 'true') {
     const segments = pathname.split('/').filter(Boolean);
+    const pathHash = segments[0] ?? '';
     const subpath = '/' + segments.slice(1).join('/');
     const response = NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
+    response.headers.set('x-admin-path-hash', pathHash);
     if (!await hasValidSessionCookie(request)) await setSessionCookie(response);
     return response;
   }
@@ -93,6 +95,7 @@ export async function middleware(request: NextRequest) {
     }
     const subpath = pathname.slice(`/${hash}`.length) || '/';
     const response = NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
+    response.headers.set('x-admin-path-hash', hash);
     if (!await hasValidSessionCookie(request)) await setSessionCookie(response);
     return response;
   }
