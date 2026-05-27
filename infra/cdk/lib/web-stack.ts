@@ -10,6 +10,7 @@ import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as path from 'path';
 import { Construct } from 'constructs';
+import { experimental } from 'aws-cdk-lib/aws-cloudfront';
 
 interface WebStackProps extends cdk.StackProps {
   deployEnv: string;
@@ -145,6 +146,7 @@ function handler(event) {
   var EXPECTED_USER = ${JSON.stringify(adminUser)};
   var EXPECTED_PASS = ${JSON.stringify(adminPass)};
 
+
   if (authHeader && EXPECTED_USER.length > 0) {
     var decoded = atob(authHeader.value.slice(6));
     var sep = decoded.indexOf(':');
@@ -181,6 +183,16 @@ function handler(event) {
       enableAcceptEncodingBrotli: true,
     });
 
+    // Lambda@Edge: Origin Request — computes x-amz-content-sha256 for POST/PUT bodies.
+    // Required because CloudFront OAC + Lambda Function URL (AWS_IAM) uses SigV4 signing
+    // and Lambda does not support unsigned payloads.
+    const payloadHashFn = new experimental.EdgeFunction(this, 'PayloadHashFunction', {
+      runtime: lambda.Runtime.NODEJS_22_X,
+      handler: 'index.handler',
+      code: lambda.Code.fromAsset(path.join(__dirname, '../lambda/payload-hash')),
+      timeout: cdk.Duration.seconds(5),
+    });
+
     // CloudFront: CDN + HTTPS
     this.distribution = new cloudfront.Distribution(this, 'Distribution', {
       ...(certificate && domainName ? { domainNames: [domainName], certificate } : {}),
@@ -191,25 +203,38 @@ function handler(event) {
         originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
       },
       additionalBehaviors: {
-        // Admin page: Basic Auth via CloudFront Function, no caching
+        // Admin page: Basic Auth via CloudFront Function, no caching, POST allowed for Server Actions.
+        // Lambda@Edge (origin request) adds x-amz-content-sha256 so OAC SigV4 signing works for POST.
         [`/${adminPathHash}`]: {
           origin: origins.FunctionUrlOrigin.withOriginAccessControl(fnUrl),
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
           originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
           functionAssociations: [{
             function: adminAuthFn,
             eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
           }],
+          edgeLambdas: [{
+            functionVersion: payloadHashFn.currentVersion,
+            eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
+            includeBody: true,
+          }],
         },
         [`/${adminPathHash}/*`]: {
           origin: origins.FunctionUrlOrigin.withOriginAccessControl(fnUrl),
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          allowedMethods: cloudfront.AllowedMethods.ALLOW_ALL,
           cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
           originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
           functionAssociations: [{
             function: adminAuthFn,
             eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+          }],
+          edgeLambdas: [{
+            functionVersion: payloadHashFn.currentVersion,
+            eventType: cloudfront.LambdaEdgeEventType.ORIGIN_REQUEST,
+            includeBody: true,
           }],
         },
         '/_next/static/*': {
