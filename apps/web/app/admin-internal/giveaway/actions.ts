@@ -2,6 +2,7 @@
 
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { SSMClient, GetParametersCommand } from "@aws-sdk/client-ssm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { TwitterApi } from "twitter-api-v2";
@@ -13,18 +14,59 @@ const TABLE_NAME =
 
 const ALLOWED_KEYS = new Set<keyof AdminActions>(["followed", "reposted", "replied", "done"]);
 
+const REGION = process.env.AWS_REGION ?? "ap-northeast-1";
+const DEPLOY_ENV = process.env.DEPLOY_ENV ?? "dev";
+
 function getDbClient(): DynamoDBDocumentClient {
-  return DynamoDBDocumentClient.from(
-    new DynamoDBClient({ region: process.env.AWS_REGION ?? "ap-northeast-1" }),
-  );
+  return DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }));
 }
 
-function getTwitterClient(): TwitterApi {
+// Cache credentials for the Lambda warm-start lifetime (module scope)
+type TwitterCreds = { apiKey: string; apiSecret: string; accessToken: string; accessSecret: string };
+let cachedCreds: TwitterCreds | null = null;
+
+async function getTwitterCreds(): Promise<TwitterCreds> {
+  if (cachedCreds) return cachedCreds;
+
+  // Local dev: use env vars directly
+  if (process.env.X_STAFF_API_KEY) {
+    cachedCreds = {
+      apiKey: process.env.X_STAFF_API_KEY,
+      apiSecret: process.env.X_STAFF_API_SECRET!,
+      accessToken: process.env.X_STAFF_ACCESS_TOKEN!,
+      accessSecret: process.env.X_STAFF_ACCESS_TOKEN_SECRET!,
+    };
+    return cachedCreds;
+  }
+
+  // Production: fetch from SSM SecureString at runtime
+  const ssm = new SSMClient({ region: REGION });
+  const { Parameters } = await ssm.send(new GetParametersCommand({
+    Names: [
+      `/oripa-now/${DEPLOY_ENV}/staff-customer-key`,
+      `/oripa-now/${DEPLOY_ENV}/staff-customer-key-secret`,
+      `/oripa-now/${DEPLOY_ENV}/staff-access-token`,
+      `/oripa-now/${DEPLOY_ENV}/staff-access-token-secret`,
+    ],
+    WithDecryption: true,
+  }));
+  const get = (name: string) => Parameters?.find((p: { Name?: string; Value?: string }) => p.Name?.endsWith(name))?.Value ?? "";
+  cachedCreds = {
+    apiKey: get("staff-customer-key"),
+    apiSecret: get("staff-customer-key-secret"),
+    accessToken: get("staff-access-token"),
+    accessSecret: get("staff-access-token-secret"),
+  };
+  return cachedCreds;
+}
+
+async function getTwitterClient(): Promise<TwitterApi> {
+  const creds = await getTwitterCreds();
   return new TwitterApi({
-    appKey: process.env.X_STAFF_API_KEY!,
-    appSecret: process.env.X_STAFF_API_SECRET!,
-    accessToken: process.env.X_STAFF_ACCESS_TOKEN!,
-    accessSecret: process.env.X_STAFF_ACCESS_TOKEN_SECRET!,
+    appKey: creds.apiKey,
+    appSecret: creds.apiSecret,
+    accessToken: creds.accessToken,
+    accessSecret: creds.accessSecret,
   });
 }
 
@@ -103,7 +145,7 @@ export async function twitterFollow(postId: string, twitterUsername: string): Pr
   if (typeof postId !== "string" || postId.length === 0 || postId.length > 128) throw new Error("Invalid postId");
   if (typeof twitterUsername !== "string" || twitterUsername.length === 0) throw new Error("Invalid username");
 
-  const client = getTwitterClient();
+  const client = await getTwitterClient();
   const username = twitterUsername.replace(/^@/, "");
   const me = await client.v2.me();
   const target = await client.v2.userByUsername(username);
@@ -116,7 +158,7 @@ export async function twitterRetweet(postId: string, tweetId: string): Promise<v
   if (typeof postId !== "string" || postId.length === 0 || postId.length > 128) throw new Error("Invalid postId");
   if (typeof tweetId !== "string" || !/^\d+$/.test(tweetId)) throw new Error("Invalid tweetId");
 
-  const client = getTwitterClient();
+  const client = await getTwitterClient();
   const me = await client.v2.me();
   await client.v2.retweet(me.data.id, tweetId);
   await persistAdminAction(postId, "reposted", true);
@@ -128,7 +170,7 @@ export async function twitterReply(postId: string, tweetId: string, text: string
   if (typeof tweetId !== "string" || !/^\d+$/.test(tweetId)) throw new Error("Invalid tweetId");
   if (typeof text !== "string" || text.length === 0 || text.length > 280) throw new Error("Invalid text");
 
-  const client = getTwitterClient();
+  const client = await getTwitterClient();
   await client.v2.reply(text, tweetId);
   await persistAdminAction(postId, "replied", true);
 }

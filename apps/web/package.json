@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.800.0",
+    "@aws-sdk/client-ssm": "^3.1029.0",
     "@aws-sdk/lib-dynamodb": "^3.800.0",
     "@iconify/react": "^6.0.2",
     "@next/third-parties": "^16.2.4",
