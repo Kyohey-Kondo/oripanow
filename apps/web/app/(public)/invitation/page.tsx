@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Icon } from '@iconify/react';
-import { INVITATION_CODES } from '../../lib/invitation-codes';
-import { CopyButton } from '../components/CopyButton';
+import { INVITATION_CODES } from '@/lib/invitation-codes';
+import { CopyButton } from '@/app/components/CopyButton';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {

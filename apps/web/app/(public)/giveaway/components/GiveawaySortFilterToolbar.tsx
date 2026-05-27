@@ -1,4 +1,4 @@
-import type { GiveawaySortOption, GiveawayFilterOption } from '../../../lib/giveaways';
+import type { GiveawaySortOption, GiveawayFilterOption } from '@/lib/giveaways';
 import styles from '../giveaway.module.css';
 
 type Props = {

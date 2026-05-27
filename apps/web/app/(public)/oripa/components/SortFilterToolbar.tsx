@@ -1,4 +1,4 @@
-import type { SortOption, FilterOption } from '../../../lib/posts';
+import type { SortOption, FilterOption } from '@/lib/posts';
 import styles from '../oripa.module.css';
 
 type Props = {
