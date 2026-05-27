@@ -23,14 +23,17 @@ export function middleware(request: NextRequest) {
     return new NextResponse(null, { status: 404 });
   }
 
+  const hash = process.env.ADMIN_PATH_HASH;
+
   // Production: CloudFront Function validates Basic Auth and sets x-admin-validated.
   // Lambda is behind OAC so this header can only originate from CloudFront.
   if (request.headers.get('x-admin-validated') === 'true') {
-    return NextResponse.rewrite(new URL('/admin-internal', request.url));
+    const hashPrefix = hash ? `/${hash}` : '';
+    const subpath = pathname.startsWith(hashPrefix) ? pathname.slice(hashPrefix.length) || '/' : '/';
+    return NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
   }
 
   // Local dev: no CloudFront Function, validate directly with hash path + Basic Auth.
-  const hash = process.env.ADMIN_PATH_HASH;
   if (hash && (pathname === `/${hash}` || pathname.startsWith(`/${hash}/`))) {
     if (!checkLocalAuth(request)) {
       return new NextResponse('Unauthorized', {
@@ -38,7 +41,8 @@ export function middleware(request: NextRequest) {
         headers: { 'WWW-Authenticate': 'Basic realm="Admin"' },
       });
     }
-    return NextResponse.rewrite(new URL('/admin-internal', request.url));
+    const subpath = pathname.slice(`/${hash}`.length) || '/';
+    return NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
   }
 
   return NextResponse.next();

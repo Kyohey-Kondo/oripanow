@@ -41,3 +41,21 @@
   font-weight: 600;
   color: #111;
 }
+
+.nav {
+  margin-bottom: 2rem;
+}
+
+.navLink {
+  display: inline-block;
+  font-size: 0.9rem;
+  color: #2563eb;
+  text-decoration: none;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid #2563eb;
+  border-radius: 6px;
+}
+
+.navLink:hover {
+  background: #eff6ff;
+}

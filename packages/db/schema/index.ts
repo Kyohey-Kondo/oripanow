@@ -74,6 +74,13 @@ export type TweetItem = {
 
 // ─── Giveaway types ───────────────────────────────────────────────────────────
 
+export type AdminActions = {
+  followed?: boolean;
+  reposted?: boolean;
+  replied?: boolean;
+  done?: boolean;        // 対応済み — manually marked as handled
+};
+
 export type EntryConditions = {
   follow: boolean;
   repost: boolean;
@@ -111,6 +118,7 @@ export type GiveawayPostItem = {
   status: "active" | "ended" | "upcoming";
   prizes: GiveawayPrize[];
   entryConditions?: EntryConditions;
+  adminActions?: AdminActions;
   deadline?: string;        // YYYY-MM-DD; absent if not parseable from tweet
   rawText: string;
   createdAt: string;        // ISO 8601

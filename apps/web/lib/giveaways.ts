@@ -44,6 +44,7 @@ export function mapToGiveawaySummary(items: GiveawayPostItem[]): GiveawayPostSum
     ...(item.storeName ? { storeName: item.storeName } : {}),
     prizes: item.prizes,
     ...(item.entryConditions ? { entryConditions: item.entryConditions } : {}),
+    ...(item.adminActions ? { adminActions: item.adminActions } : {}),
     ...(item.deadline ? { deadline: item.deadline } : {}),
     daysRemaining: computeDaysRemaining(item.deadline),
     createdAt: item.createdAt,

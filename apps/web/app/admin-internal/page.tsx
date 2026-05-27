@@ -17,6 +17,9 @@ export default async function AdminPage() {
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>Admin Dashboard</h1>
+      <nav className={styles.nav}>
+        <a href="/admin-internal/giveaway" className={styles.navLink}>Giveaway 対応管理 →</a>
+      </nav>
       <p className={styles.meta}>取得時刻: {new Date(stats.fetchedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}</p>
 
       <div className={styles.section}>

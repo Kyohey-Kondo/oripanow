@@ -1,0 +1,300 @@
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  font-family: system-ui, sans-serif;
+}
+
+.header {
+  margin-bottom: 1.5rem;
+}
+
+.backLink {
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-decoration: none;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.backLink:hover {
+  color: #111;
+}
+
+.heading {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 0.25rem;
+}
+
+.meta {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.empty {
+  color: #9ca3af;
+  font-size: 0.9rem;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+/* ─── Card ─────────────────────────────────────────────────────── */
+
+.card {
+  position: relative;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px;
+  background: #fff;
+  transition: opacity 0.2s, filter 0.2s;
+}
+
+.cardDone {
+  opacity: 0.4;
+  filter: grayscale(0.5);
+}
+
+.doneBadge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #16a34a;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  border-radius: 100px;
+  padding: 2px 8px;
+  margin-bottom: 8px;
+}
+
+/* ─── Card header ────────────────────────────────────────────── */
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.accountName {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.postTime {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* ─── Prizes ─────────────────────────────────────────────────── */
+
+.prizesSection {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.prizeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.prizeBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.prizeBadgeBox {
+  background: rgba(245, 200, 66, 0.12);
+  color: #92680a;
+  border: 1px solid rgba(245, 200, 66, 0.4);
+}
+
+.prizeBadgeSingle {
+  background: rgba(59, 130, 246, 0.08);
+  color: #1d4ed8;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.prizeBadgeOther {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #e5e7eb;
+}
+
+.prizeName {
+  color: #374151;
+  flex: 1;
+}
+
+.prizeCount {
+  font-size: 0.78rem;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+/* ─── Deadline ───────────────────────────────────────────────── */
+
+.deadlineRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 0.82rem;
+}
+
+.deadlineLabel {
+  color: #9ca3af;
+  font-size: 0.75rem;
+}
+
+.deadlineDate {
+  color: #374151;
+  font-weight: 500;
+}
+
+.daysRemaining {
+  color: #6b7280;
+  font-size: 0.78rem;
+}
+
+/* ─── Entry conditions (read-only) ──────────────────────────── */
+
+.conditionsSection {
+  margin-bottom: 10px;
+}
+
+.conditionsLabel {
+  font-size: 0.72rem;
+  color: #9ca3af;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.conditionBadgeGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.conditionBadge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 100px;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.conditionNote {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 4px 0 0;
+  font-style: italic;
+}
+
+/* ─── Action buttons ─────────────────────────────────────────── */
+
+.actionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.actionBtn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.actionBtn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.actionBtnDone {
+  background: #dcfce7;
+  border-color: #86efac;
+  color: #16a34a;
+}
+
+.actionBtnDone:hover {
+  background: #bbf7d0;
+}
+
+.tweetLink {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  color: #6b7280;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.tweetLink:hover {
+  color: #1d9bf0;
+  border-color: #1d9bf0;
+}
+
+/* ─── Footer / Done toggle ──────────────────────────────────── */
+
+.cardFooter {
+  border-top: 1px solid #f3f4f6;
+  padding-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.doneToggle {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.doneToggle:hover {
+  background: #f3f4f6;
+}
+
+.doneToggleActive {
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.doneToggleActive:hover {
+  background: #fef2f2;
+}
+
+@media (max-width: 640px) {
+  .cardsGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,3 +1,10 @@
+export interface AdminActions {
+  followed?: boolean;
+  reposted?: boolean;
+  replied?: boolean;
+  done?: boolean;
+}
+
 export interface EntryConditions {
   follow: boolean;
   repost: boolean;
@@ -21,6 +28,7 @@ export interface GiveawayPostSummary {
   storeName?: string;
   prizes: GiveawayPrize[];
   entryConditions?: EntryConditions;
+  adminActions?: AdminActions;
   deadline?: string;        // YYYY-MM-DD
   daysRemaining?: number;   // Computed from deadline − today
   createdAt: string;
