@@ -31,9 +31,11 @@ export class WebStack extends cdk.Stack {
     const oripaPostsTableName = `${deployEnv}-oripa-posts`;
     const giveawayPostsTableName = `${deployEnv}-giveaway-posts`;
 
-    // SSM: admin credentials (looked up at synth time)
-    const adminPass = ssm.StringParameter.valueFromLookup(this, '/oripanow/admin/pass');
-    const adminUser = ssm.StringParameter.valueFromLookup(this, '/oripanow/admin/user');
+    // CloudFront Function needs literal strings at synth time — read from env, not SSM lookup (which would cache in cdk.context.json).
+    const adminPassForCfFn = process.env.ADMIN_PASS ?? '';
+    const adminUserForCfFn = process.env.ADMIN_USER ?? '';
+    // Lambda env var: resolved by CloudFormation at deploy time, never written to cdk.context.json.
+    const adminPassForLambda = ssm.StringParameter.valueForStringParameter(this, '/oripanow/admin/pass');
 
     // S3: static assets
     const assetBucket = new s3.Bucket(this, 'AssetBucket', {
@@ -76,7 +78,7 @@ export class WebStack extends cdk.Stack {
         GIVEAWAY_POSTS_TABLE_NAME: giveawayPostsTableName,
         DEPLOY_ENV: deployEnv,
         NEXT_PUBLIC_ADSENSE_PUBLISHER_ID: 'ca-pub-9551401698199717',
-        ADMIN_PASS: adminPass,
+        ADMIN_PASS: adminPassForLambda,
       },
     });
 
@@ -147,8 +149,8 @@ export class WebStack extends cdk.Stack {
 function handler(event) {
   var request = event.request;
   var authHeader = request.headers['authorization'];
-  var EXPECTED_USER = ${JSON.stringify(adminUser)};
-  var EXPECTED_PASS = ${JSON.stringify(adminPass)};
+  var EXPECTED_USER = ${JSON.stringify(adminUserForCfFn)};
+  var EXPECTED_PASS = ${JSON.stringify(adminPassForCfFn)};
 
 
   if (authHeader && EXPECTED_USER.length > 0) {
