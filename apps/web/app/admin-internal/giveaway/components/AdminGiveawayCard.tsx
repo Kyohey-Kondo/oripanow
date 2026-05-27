@@ -13,8 +13,9 @@ function formatDeadline(deadline: string): string {
 }
 
 function formatTimestamp(createdAt: string): string {
-  const d = new Date(createdAt);
-  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  const m = createdAt.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!m) return createdAt;
+  return `${+m[2]}/${+m[3]} ${m[4]}:${m[5]}`;
 }
 
 function getPrizeBadgeLabel(type: GiveawayPrize["type"]): string {
