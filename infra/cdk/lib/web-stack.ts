@@ -25,11 +25,11 @@ export class WebStack extends cdk.Stack {
 
     const { deployEnv, domainName, certificateArn } = props;
 
-    // SSM: staff Twitter OAuth 1.0a credentials for admin giveaway actions
-    const staffApiKey = ssm.StringParameter.valueForStringParameter(this, `/oripa-now/${deployEnv}/staff-customer-key`);
-    const staffApiSecret = ssm.StringParameter.valueForStringParameter(this, `/oripa-now/${deployEnv}/staff-customer-key-secret`);
-    const staffAccessToken = ssm.StringParameter.valueForStringParameter(this, `/oripa-now/${deployEnv}/staff-access-token`);
-    const staffAccessTokenSecret = ssm.StringParameter.valueForStringParameter(this, `/oripa-now/${deployEnv}/staff-access-token-secret`);
+    // SSM: staff Twitter OAuth 1.0a credentials for admin giveaway actions (SecureString)
+    const staffApiKey = ssm.StringParameter.valueForSecureStringParameter(this, `/oripa-now/${deployEnv}/staff-customer-key`);
+    const staffApiSecret = ssm.StringParameter.valueForSecureStringParameter(this, `/oripa-now/${deployEnv}/staff-customer-key-secret`);
+    const staffAccessToken = ssm.StringParameter.valueForSecureStringParameter(this, `/oripa-now/${deployEnv}/staff-access-token`);
+    const staffAccessTokenSecret = ssm.StringParameter.valueForSecureStringParameter(this, `/oripa-now/${deployEnv}/staff-access-token-secret`);
 
     // DynamoDB: batch-stack が作成した oripa-posts / giveaway-posts テーブル（読み取り専用）
     const oripaPostsTableName = `${deployEnv}-oripa-posts`;
