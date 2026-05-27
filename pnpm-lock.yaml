@@ -75,6 +75,9 @@ importers:
       '@aws-sdk/client-dynamodb':
         specifier: ^3.800.0
         version: 3.1029.0
+      '@aws-sdk/client-ssm':
+        specifier: ^3.1029.0
+        version: 3.1029.0
       '@aws-sdk/lib-dynamodb':
         specifier: ^3.800.0
         version: 3.1029.0(@aws-sdk/client-dynamodb@3.1029.0)
@@ -99,6 +102,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.2.5(react@19.2.5)
+      twitter-api-v2:
+        specifier: ^1.29.0
+        version: 1.29.0
     devDependencies:
       '@oripa-now/config':
         specifier: workspace:*

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import type { GiveawayPostSummary, EntryConditions, GiveawayPrize, AdminActions } from "@oripa-now/types";
-import { updateAdminAction, twitterFollow, twitterRetweet, twitterReply } from "../actions";
+import { updateAdminAction, twitterFollow, twitterRetweet } from "../actions";
 import styles from "../admin-giveaway.module.css";
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
@@ -73,9 +73,13 @@ export function AdminGiveawayCard({ giveaway }: Props) {
 
   async function handleReply() {
     const note = ec?.note ? `\n補足: ${ec.note}` : "";
-    const text = window.prompt(`リプライ内容を入力してください${note}`, "");
-    if (text === null || text.trim() === "") return;
-    await run("replied", () => twitterReply(giveaway.postId, giveaway.tweetId, text.trim()));
+    const confirmed = window.confirm(`Twitterのリプライ画面を開きますか？${note}`);
+    if (!confirmed) return;
+    window.open(
+      `https://twitter.com/intent/tweet?in_reply_to=${giveaway.tweetId}`,
+      "_blank",
+    );
+    await run("replied", () => updateAdminAction(giveaway.postId, "replied", true));
   }
 
   async function handleDoneToggle() {

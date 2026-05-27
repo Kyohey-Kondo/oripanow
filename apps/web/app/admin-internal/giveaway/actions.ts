@@ -161,13 +161,3 @@ export async function twitterRetweet(postId: string, tweetId: string): Promise<v
   await persistAdminAction(postId, "reposted", true);
 }
 
-export async function twitterReply(postId: string, tweetId: string, text: string): Promise<void> {
-  await assertAdmin();
-  if (typeof postId !== "string" || postId.length === 0 || postId.length > 128) throw new Error("Invalid postId");
-  if (typeof tweetId !== "string" || !/^\d+$/.test(tweetId)) throw new Error("Invalid tweetId");
-  if (typeof text !== "string" || text.length === 0 || text.length > 280) throw new Error("Invalid text");
-
-  const client = await getTwitterClient();
-  await client.v2.reply(text, tweetId);
-  await persistAdminAction(postId, "replied", true);
-}
