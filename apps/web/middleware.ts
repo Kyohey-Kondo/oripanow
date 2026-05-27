@@ -1,25 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHmac } from 'crypto';
 
 const BLOCKED_PATHS = ['/admin', '/dashboard', '/manager', '/admin-internal'];
 const COOKIE_NAME = 'admin_session';
 
-function makeSessionToken(): string {
+// Edge-compatible HMAC using Web Crypto API
+async function makeSessionToken(): Promise<string> {
   const secret = process.env.ADMIN_PASS ?? 'fallback';
-  return createHmac('sha256', secret).update('admin-authenticated').digest('hex');
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode('admin-authenticated'));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-function hasValidSessionCookie(request: NextRequest): boolean {
+async function hasValidSessionCookie(request: NextRequest): Promise<boolean> {
   const cookie = request.cookies.get(COOKIE_NAME)?.value;
-  return !!cookie && cookie === makeSessionToken();
+  if (!cookie) return false;
+  return cookie === await makeSessionToken();
 }
 
-function setSessionCookie(response: NextResponse): void {
-  response.cookies.set(COOKIE_NAME, makeSessionToken(), {
+async function setSessionCookie(response: NextResponse): Promise<void> {
+  response.cookies.set(COOKIE_NAME, await makeSessionToken(), {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 8, // 8 hours
+    maxAge: 60 * 60 * 8,
     secure: process.env.NODE_ENV === 'production',
   });
 }
@@ -37,7 +43,7 @@ function checkLocalAuth(request: NextRequest): boolean {
   );
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Block well-known admin paths (bot/scanner protection)
@@ -54,7 +60,7 @@ export function middleware(request: NextRequest) {
     const segments = pathname.split('/').filter(Boolean);
     const subpath = '/' + segments.slice(1).join('/');
     const response = NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
-    if (!hasValidSessionCookie(request)) setSessionCookie(response);
+    if (!await hasValidSessionCookie(request)) await setSessionCookie(response);
     return response;
   }
 
@@ -68,7 +74,7 @@ export function middleware(request: NextRequest) {
     }
     const subpath = pathname.slice(`/${hash}`.length) || '/';
     const response = NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
-    if (!hasValidSessionCookie(request)) setSessionCookie(response);
+    if (!await hasValidSessionCookie(request)) await setSessionCookie(response);
     return response;
   }
 

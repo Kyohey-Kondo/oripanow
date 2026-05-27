@@ -5,7 +5,6 @@ import { DynamoDBDocumentClient, GetCommand, UpdateCommand } from "@aws-sdk/lib-
 import { SSMClient, GetParametersCommand } from "@aws-sdk/client-ssm";
 import { revalidatePath } from "next/cache";
 import { headers, cookies } from "next/headers";
-import { createHmac } from "crypto";
 import { TwitterApi } from "twitter-api-v2";
 import type { AdminActions } from "@oripa-now/types";
 
@@ -71,16 +70,21 @@ async function getTwitterClient(): Promise<TwitterApi> {
   });
 }
 
-function makeSessionToken(): string {
+async function makeSessionToken(): Promise<string> {
   const secret = process.env.ADMIN_PASS ?? "fallback";
-  return createHmac("sha256", secret).update("admin-authenticated").digest("hex");
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode("admin-authenticated"));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 /** Re-verify admin auth inside the action via HMAC session cookie. */
 async function assertAdmin(): Promise<void> {
   const jar = await cookies();
   const cookie = jar.get("admin_session")?.value;
-  if (cookie && cookie === makeSessionToken()) return;
+  if (cookie && cookie === await makeSessionToken()) return;
 
   // Fallback for local dev without cookie (e.g. first request before cookie is set)
   const h = await headers();
