@@ -5,12 +5,12 @@ import {
   type ToolResultBlock,
 } from '@aws-sdk/client-bedrock-runtime';
 import type { GiveawayTweetItem } from '@oripa-now/db';
-import type { GiveawayPrize } from '@oripa-now/types';
+import type { GiveawayPrize, EntryConditions } from '@oripa-now/types';
 
 export type GiveawayAnalysisResult = {
   status: 'active' | 'ended' | 'upcoming' | 'not_giveaway';
   prizes: GiveawayPrize[];
-  conditions?: string;
+  entryConditions?: EntryConditions;
   deadline?: string; // YYYY-MM-DD
 };
 
@@ -61,12 +61,36 @@ const TOOL: Tool = {
               required: ['type', 'name'],
             },
           },
-          conditions: {
-            type: 'string',
+          entryConditions: {
+            type: 'object',
             description:
-              'Application conditions as a short human-readable string in Japanese. ' +
-              'Summarize the key steps (e.g. "フォロー＋RT", "フォロー＋引用RT＋コメント"). ' +
+              'Structured entry conditions for this giveaway. ' +
+              'Set each boolean to true only if that action is explicitly required. ' +
               'Omit for not_giveaway.',
+            properties: {
+              follow: {
+                type: 'boolean',
+                description: 'Must follow the account (フォロー必須).',
+              },
+              repost: {
+                type: 'boolean',
+                description: 'Must repost or RT (リポスト/RT必須).',
+              },
+              reply: {
+                type: 'boolean',
+                description: 'Must reply or quote-tweet (リプライ/引用RT必須).',
+              },
+              other: {
+                type: 'boolean',
+                description: 'Any other required action (いいね、ハッシュタグ、複数アカウントフォロー等).',
+              },
+              note: {
+                type: 'string',
+                description:
+                  'Supplementary detail in Japanese for non-obvious conditions, e.g. required hashtag, reply prompt, or multi-account follow. Omit if not needed.',
+              },
+            },
+            required: ['follow', 'repost', 'reply', 'other'],
           },
           deadline: {
             type: 'string',
@@ -106,7 +130,8 @@ export async function analyzeGiveawayTweet(
               text: `Today's date (JST): ${todayJST}
 
 Analyze this Japanese tweet for a Pokémon card giveaway campaign (プレゼント企画/懸賞).
-Extract prize details, entry conditions, and deadline using the provided tool.
+Extract prize details, structured entry conditions (follow/repost/reply/other booleans), and deadline using the provided tool.
+Set each entryConditions boolean to true only if that action is explicitly required to enter.
 not_giveaway: tweet is not about a Pokémon card giveaway (e.g. normal sale, news, restock).
 
 Tweet:

@@ -1,4 +1,4 @@
-import type { GiveawayPostSummary, GiveawayPrize } from '@oripa-now/types';
+import type { GiveawayPostSummary, GiveawayPrize, EntryConditions } from '@oripa-now/types';
 import { Icon } from '@iconify/react';
 import styles from '../giveaway.module.css';
 
@@ -37,6 +37,32 @@ function formatTimestamp(createdAt: string): string {
   return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
+const CONDITION_LABELS: { key: keyof Omit<EntryConditions, 'note'>; label: string }[] = [
+  { key: 'follow', label: 'フォロー' },
+  { key: 'repost', label: 'リポスト' },
+  { key: 'reply',  label: 'リプライ' },
+  { key: 'other',  label: 'その他' },
+];
+
+function ConditionBadges({ ec }: { ec: EntryConditions }) {
+  return (
+    <div className={styles.conditionsRow}>
+      <div className={styles.conditionsLabel}>応募</div>
+      <div className={styles.conditionBadgeGroup}>
+        {CONDITION_LABELS.map(({ key, label }) => (
+          <span
+            key={key}
+            className={`${styles.conditionBadge} ${ec[key] ? styles.conditionBadgeActive : styles.conditionBadgeInactive}`}
+          >
+            {label}
+          </span>
+        ))}
+        {ec.note && <span className={styles.conditionNote}>{ec.note}</span>}
+      </div>
+    </div>
+  );
+}
+
 type Props = {
   giveaway: GiveawayPostSummary;
 };
@@ -69,11 +95,8 @@ export function GiveawayCard({ giveaway }: Props) {
           ))}
         </div>
 
-        {giveaway.conditions && (
-          <div className={styles.conditionsRow}>
-            <div className={styles.conditionsLabel}>応募</div>
-            <div className={styles.conditionsText}>{giveaway.conditions}</div>
-          </div>
+        {giveaway.entryConditions && (
+          <ConditionBadges ec={giveaway.entryConditions} />
         )}
 
         <div className={styles.deadlineRow}>

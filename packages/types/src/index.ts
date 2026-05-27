@@ -1,3 +1,11 @@
+export interface EntryConditions {
+  follow: boolean;
+  repost: boolean;
+  reply: boolean;
+  other: boolean;
+  note?: string;
+}
+
 export interface GiveawayPrize {
   type: "box" | "single" | "other";
   name: string;
@@ -12,7 +20,7 @@ export interface GiveawayPostSummary {
   storeId?: string;
   storeName?: string;
   prizes: GiveawayPrize[];
-  conditions?: string;
+  entryConditions?: EntryConditions;
   deadline?: string;        // YYYY-MM-DD
   daysRemaining?: number;   // Computed from deadline − today
   createdAt: string;

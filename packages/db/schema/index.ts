@@ -74,6 +74,14 @@ export type TweetItem = {
 
 // ─── Giveaway types ───────────────────────────────────────────────────────────
 
+export type EntryConditions = {
+  follow: boolean;
+  repost: boolean;
+  reply: boolean;
+  other: boolean;
+  note?: string;
+};
+
 export type GiveawayPrize = {
   type: "box" | "single" | "other";
   name: string;
@@ -102,7 +110,7 @@ export type GiveawayPostItem = {
   twitterUsername: string;
   status: "active" | "ended" | "upcoming";
   prizes: GiveawayPrize[];
-  conditions?: string;      // e.g. "フォロー＋RT"
+  entryConditions?: EntryConditions;
   deadline?: string;        // YYYY-MM-DD; absent if not parseable from tweet
   rawText: string;
   createdAt: string;        // ISO 8601

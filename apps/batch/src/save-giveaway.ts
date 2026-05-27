@@ -64,7 +64,11 @@ export async function saveGiveawayPost(
     twitterUsername: tweet.twitterUsername,
     status: result.status as GiveawayPostItem['status'],
     prizes: result.prizes,
-    ...(result.conditions ? { conditions: result.conditions } : {}),
+    ...(() => {
+      const ec = result.entryConditions;
+      const hasAny = ec && (ec.follow || ec.repost || ec.reply || ec.other);
+      return hasAny ? { entryConditions: ec } : {};
+    })(),
     ...(result.deadline ? { deadline: result.deadline } : {}),
     rawText: tweet.content,
     createdAt: now,
