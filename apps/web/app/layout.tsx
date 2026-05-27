@@ -1,10 +1,6 @@
 import type { Metadata } from 'next';
 import { Orbitron, Noto_Sans_JP } from 'next/font/google';
 import { GoogleAnalytics } from '@next/third-parties/google';
-import { Footer } from './components/Footer';
-import { A8ProductAd } from './components/A8ProductAd';
-import { FloatingAdBanner } from './components/FloatingAdBanner';
-import { PromoBar } from './components/PromoBar';
 
 const orbitron = Orbitron({
   subsets: ['latin'],
@@ -49,11 +45,7 @@ export default function RootLayout({
   return (
     <html lang="ja" className={`${orbitron.variable} ${notoSansJP.variable}`}>
       <body style={{ fontFamily: 'var(--font-body, sans-serif)', margin: 0, overflowX: 'hidden' }}>
-        <PromoBar />
         {children}
-        <A8ProductAd />
-        <FloatingAdBanner />
-        <Footer />
       </body>
       {gaId && process.env.NODE_ENV === 'production' && <GoogleAnalytics gaId={gaId} />}
     </html>

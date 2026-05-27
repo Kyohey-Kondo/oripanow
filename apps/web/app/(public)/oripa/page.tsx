@@ -2,18 +2,18 @@ import React from 'react';
 import Script from 'next/script';
 import type { Metadata } from 'next';
 import { Icon } from '@iconify/react';
-import { AdBanner } from '../components/AdBanner';
-import { PageNav } from '../components/PageNav';
+import { AdBanner } from '@/app/components/AdBanner';
+import { PageNav } from '@/app/components/PageNav';
 import {
   getTodayOnSalePosts,
   sortPosts,
   filterPosts,
   VALID_SORTS,
   VALID_FILTERS,
-} from '../../lib/posts';
-import type { SortOption, FilterOption } from '../../lib/posts';
-import { tweetIdToDate } from '../../lib/tweet-utils';
-import { REGIONS, getAreasForRegion } from '../../lib/regions';
+} from '@/lib/posts';
+import type { SortOption, FilterOption } from '@/lib/posts';
+import { tweetIdToDate } from '@/lib/tweet-utils';
+import { REGIONS, getAreasForRegion } from '@/lib/regions';
 import { OripaCard } from './components/OripaCard';
 import { SortFilterToolbar } from './components/SortFilterToolbar';
 import styles from './oripa.module.css';

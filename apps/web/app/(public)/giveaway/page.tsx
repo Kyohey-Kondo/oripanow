@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 import { Icon } from '@iconify/react';
-import { Footer } from '../components/Footer';
-import { PageNav } from '../components/PageNav';
-import { AdBanner } from '../components/AdBanner';
+import { Footer } from '@/app/components/Footer';
+import { PageNav } from '@/app/components/PageNav';
+import { AdBanner } from '@/app/components/AdBanner';
 import {
   getActiveGiveaways,
   VALID_GIVEAWAY_SORTS,
   VALID_GIVEAWAY_FILTERS,
-} from '../../lib/giveaways';
-import type { GiveawaySortOption, GiveawayFilterOption } from '../../lib/giveaways';
+} from '@/lib/giveaways';
+import type { GiveawaySortOption, GiveawayFilterOption } from '@/lib/giveaways';
 import { GiveawayCard } from './components/GiveawayCard';
 import { GiveawaySortFilterToolbar } from './components/GiveawaySortFilterToolbar';
 import styles from './giveaway.module.css';

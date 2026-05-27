@@ -7,6 +7,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import * as path from 'path';
 import { Construct } from 'constructs';
 
@@ -112,6 +113,42 @@ export class WebStack extends cdk.Stack {
         ? acm.Certificate.fromCertificateArn(this, 'Certificate', certificateArn)
         : undefined;
 
+    // CloudFront Function: Basic Auth for admin path (viewer request level, before OAC signing)
+    const adminUser = process.env.ADMIN_USER ?? '';
+    const adminPass = process.env.ADMIN_PASS ?? '';
+    const adminPathHash = ssm.StringParameter.valueFromLookup(this, '/oripanow/admin/path-hash');
+    const adminAuthFn = new cloudfront.Function(this, 'AdminAuthFunction', {
+      runtime: cloudfront.FunctionRuntime.JS_2_0,
+      code: cloudfront.FunctionCode.fromInline(`
+function handler(event) {
+  var request = event.request;
+  var authHeader = request.headers['authorization'];
+  var EXPECTED_USER = ${JSON.stringify(adminUser)};
+  var EXPECTED_PASS = ${JSON.stringify(adminPass)};
+
+  if (authHeader && EXPECTED_USER.length > 0) {
+    var decoded = atob(authHeader.value.slice(6));
+    var sep = decoded.indexOf(':');
+    if (sep > 0 && decoded.slice(0, sep) === EXPECTED_USER && decoded.slice(sep + 1) === EXPECTED_PASS) {
+      delete request.headers['authorization'];
+      request.headers['x-admin-validated'] = { value: 'true' };
+      return request;
+    }
+  }
+
+  return {
+    statusCode: 401,
+    statusDescription: 'Unauthorized',
+    headers: {
+      'www-authenticate': { value: 'Basic realm="Admin"' },
+      'content-type': { value: 'text/plain' }
+    },
+    body: 'Unauthorized'
+  };
+}
+      `),
+    });
+
     // CloudFront: custom cache policy for SSR pages (24h TTL, keyed on area + page)
     const ssrCachePolicy = new cloudfront.CachePolicy(this, 'SsrCachePolicy', {
       cachePolicyName: `${deployEnv}-ssr-cache`,
@@ -135,6 +172,27 @@ export class WebStack extends cdk.Stack {
         originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
       },
       additionalBehaviors: {
+        // Admin page: Basic Auth via CloudFront Function, no caching
+        [`/${adminPathHash}`]: {
+          origin: origins.FunctionUrlOrigin.withOriginAccessControl(fnUrl),
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+          functionAssociations: [{
+            function: adminAuthFn,
+            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+          }],
+        },
+        [`/${adminPathHash}/*`]: {
+          origin: origins.FunctionUrlOrigin.withOriginAccessControl(fnUrl),
+          viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+          cachePolicy: cloudfront.CachePolicy.CACHING_DISABLED,
+          originRequestPolicy: cloudfront.OriginRequestPolicy.ALL_VIEWER_EXCEPT_HOST_HEADER,
+          functionAssociations: [{
+            function: adminAuthFn,
+            eventType: cloudfront.FunctionEventType.VIEWER_REQUEST,
+          }],
+        },
         '/_next/static/*': {
           origin: origins.S3BucketOrigin.withOriginAccessControl(assetBucket),
           viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,

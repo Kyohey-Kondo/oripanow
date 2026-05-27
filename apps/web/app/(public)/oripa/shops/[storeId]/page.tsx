@@ -3,8 +3,8 @@ import { cache } from 'react';
 import Script from 'next/script';
 import type { Metadata } from 'next';
 import { Icon } from '@iconify/react';
-import { getShopPosts } from '../../../../lib/posts';
-import { tweetIdToDate } from '../../../../lib/tweet-utils';
+import { getShopPosts } from '@/lib/posts';
+import { tweetIdToDate } from '@/lib/tweet-utils';
 import { OripaCard } from '../../components/OripaCard';
 import styles from '../../oripa.module.css';
 
