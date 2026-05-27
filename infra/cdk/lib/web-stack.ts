@@ -31,6 +31,10 @@ export class WebStack extends cdk.Stack {
     const oripaPostsTableName = `${deployEnv}-oripa-posts`;
     const giveawayPostsTableName = `${deployEnv}-giveaway-posts`;
 
+    // SSM: admin credentials (looked up at synth time)
+    const adminPass = ssm.StringParameter.valueFromLookup(this, '/oripanow/admin/pass');
+    const adminUser = ssm.StringParameter.valueFromLookup(this, '/oripanow/admin/user');
+
     // S3: static assets
     const assetBucket = new s3.Bucket(this, 'AssetBucket', {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -71,6 +75,8 @@ export class WebStack extends cdk.Stack {
         ORIPA_POSTS_TABLE_NAME: oripaPostsTableName,
         GIVEAWAY_POSTS_TABLE_NAME: giveawayPostsTableName,
         DEPLOY_ENV: deployEnv,
+        NEXT_PUBLIC_ADSENSE_PUBLISHER_ID: 'ca-pub-9551401698199717',
+        ADMIN_PASS: adminPass,
       },
     });
 
@@ -134,8 +140,6 @@ export class WebStack extends cdk.Stack {
         : undefined;
 
     // CloudFront Function: Basic Auth for admin path (viewer request level, before OAC signing)
-    const adminUser = process.env.ADMIN_USER ?? '';
-    const adminPass = process.env.ADMIN_PASS ?? '';
     const adminPathHash = ssm.StringParameter.valueFromLookup(this, '/oripanow/admin/path-hash');
     const adminAuthFn = new cloudfront.Function(this, 'AdminAuthFunction', {
       runtime: cloudfront.FunctionRuntime.JS_2_0,
