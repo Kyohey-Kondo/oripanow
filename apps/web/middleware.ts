@@ -27,9 +27,10 @@ export function middleware(request: NextRequest) {
 
   // Production: CloudFront Function validates Basic Auth and sets x-admin-validated.
   // Lambda is behind OAC so this header can only originate from CloudFront.
+  // Strip the first path segment (the hash, already validated by CloudFront) to get the subpath.
   if (request.headers.get('x-admin-validated') === 'true') {
-    const hashPrefix = hash ? `/${hash}` : '';
-    const subpath = pathname.startsWith(hashPrefix) ? pathname.slice(hashPrefix.length) || '/' : '/';
+    const segments = pathname.split('/').filter(Boolean); // ['83de833b', 'giveaway'] or ['83de833b']
+    const subpath = '/' + segments.slice(1).join('/');    // '/giveaway' or '/'
     return NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
   }
 
