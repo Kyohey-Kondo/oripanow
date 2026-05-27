@@ -4,19 +4,28 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
+import { TwitterApi } from "twitter-api-v2";
 import type { AdminActions } from "@oripa-now/types";
 
 const TABLE_NAME =
   process.env.GIVEAWAY_POSTS_TABLE_NAME ??
   `${process.env.DEPLOY_ENV ?? "dev"}-giveaway-posts`;
 
-// Keys allowed to be set via this action — runtime guard against type erasure
 const ALLOWED_KEYS = new Set<keyof AdminActions>(["followed", "reposted", "replied", "done"]);
 
-function getClient(): DynamoDBDocumentClient {
+function getDbClient(): DynamoDBDocumentClient {
   return DynamoDBDocumentClient.from(
     new DynamoDBClient({ region: process.env.AWS_REGION ?? "ap-northeast-1" }),
   );
+}
+
+function getTwitterClient(): TwitterApi {
+  return new TwitterApi({
+    appKey: process.env.X_STAFF_API_KEY!,
+    appSecret: process.env.X_STAFF_API_SECRET!,
+    accessToken: process.env.X_STAFF_ACCESS_TOKEN!,
+    accessSecret: process.env.X_STAFF_ACCESS_TOKEN_SECRET!,
+  });
 }
 
 /** Re-verify admin auth inside the action — do not rely on middleware alone. */
@@ -24,7 +33,6 @@ async function assertAdmin(): Promise<void> {
   const h = await headers();
 
   // Production: CloudFront Function sets this header after validating Basic Auth.
-  // Lambda is behind OAC so this can only originate from CloudFront.
   if (h.get("x-admin-validated") === "true") return;
 
   // Local dev: verify Basic Auth credentials directly.
@@ -37,7 +45,6 @@ async function assertAdmin(): Promise<void> {
   const pass = decoded.slice(sep + 1);
   const expectedUser = process.env.ADMIN_USER ?? "";
   const expectedPass = process.env.ADMIN_PASS ?? "";
-  // Constant-time comparison to prevent timing attacks
   const ok =
     expectedUser.length > 0 &&
     user.length === expectedUser.length &&
@@ -47,26 +54,12 @@ async function assertAdmin(): Promise<void> {
   if (!ok) throw new Error("Unauthorized");
 }
 
-export async function updateAdminAction(
+async function persistAdminAction(
   postId: string,
   key: keyof AdminActions,
   value: boolean,
 ): Promise<void> {
-  await assertAdmin();
-
-  // Runtime input validation — TypeScript types are erased at the RPC boundary
-  if (typeof postId !== "string" || postId.length === 0 || postId.length > 128) {
-    throw new Error("Invalid postId");
-  }
-  if (!ALLOWED_KEYS.has(key as keyof AdminActions)) {
-    throw new Error("Invalid key");
-  }
-  if (typeof value !== "boolean") {
-    throw new Error("Invalid value");
-  }
-
-  const client = getClient();
-
+  const client = getDbClient();
   const existing = await client.send(
     new GetCommand({
       TableName: TABLE_NAME,
@@ -76,7 +69,6 @@ export async function updateAdminAction(
   );
   const current = (existing.Item?.adminActions ?? {}) as AdminActions;
   const updated: AdminActions = { ...current, [key]: value };
-
   await client.send(
     new UpdateCommand({
       TableName: TABLE_NAME,
@@ -89,6 +81,54 @@ export async function updateAdminAction(
       },
     }),
   );
-
   revalidatePath("/admin-internal/giveaway");
+}
+
+// ─── Public actions ───────────────────────────────────────────────────────────
+
+export async function updateAdminAction(
+  postId: string,
+  key: keyof AdminActions,
+  value: boolean,
+): Promise<void> {
+  await assertAdmin();
+  if (typeof postId !== "string" || postId.length === 0 || postId.length > 128) throw new Error("Invalid postId");
+  if (!ALLOWED_KEYS.has(key as keyof AdminActions)) throw new Error("Invalid key");
+  if (typeof value !== "boolean") throw new Error("Invalid value");
+  await persistAdminAction(postId, key, value);
+}
+
+export async function twitterFollow(postId: string, twitterUsername: string): Promise<void> {
+  await assertAdmin();
+  if (typeof postId !== "string" || postId.length === 0 || postId.length > 128) throw new Error("Invalid postId");
+  if (typeof twitterUsername !== "string" || twitterUsername.length === 0) throw new Error("Invalid username");
+
+  const client = getTwitterClient();
+  const username = twitterUsername.replace(/^@/, "");
+  const me = await client.v2.me();
+  const target = await client.v2.userByUsername(username);
+  await client.v2.follow(me.data.id, target.data.id);
+  await persistAdminAction(postId, "followed", true);
+}
+
+export async function twitterRetweet(postId: string, tweetId: string): Promise<void> {
+  await assertAdmin();
+  if (typeof postId !== "string" || postId.length === 0 || postId.length > 128) throw new Error("Invalid postId");
+  if (typeof tweetId !== "string" || !/^\d+$/.test(tweetId)) throw new Error("Invalid tweetId");
+
+  const client = getTwitterClient();
+  const me = await client.v2.me();
+  await client.v2.retweet(me.data.id, tweetId);
+  await persistAdminAction(postId, "reposted", true);
+}
+
+export async function twitterReply(postId: string, tweetId: string, text: string): Promise<void> {
+  await assertAdmin();
+  if (typeof postId !== "string" || postId.length === 0 || postId.length > 128) throw new Error("Invalid postId");
+  if (typeof tweetId !== "string" || !/^\d+$/.test(tweetId)) throw new Error("Invalid tweetId");
+  if (typeof text !== "string" || text.length === 0 || text.length > 280) throw new Error("Invalid text");
+
+  const client = getTwitterClient();
+  await client.v2.reply(text, tweetId);
+  await persistAdminAction(postId, "replied", true);
 }

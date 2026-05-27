@@ -25,6 +25,12 @@ export class WebStack extends cdk.Stack {
 
     const { deployEnv, domainName, certificateArn } = props;
 
+    // SSM: staff Twitter OAuth 1.0a credentials for admin giveaway actions
+    const staffApiKey = ssm.StringParameter.valueForStringParameter(this, `/oripa-now/${deployEnv}/staff-customer-key`);
+    const staffApiSecret = ssm.StringParameter.valueForStringParameter(this, `/oripa-now/${deployEnv}/staff-customer-key-secret`);
+    const staffAccessToken = ssm.StringParameter.valueForStringParameter(this, `/oripa-now/${deployEnv}/staff-access-token`);
+    const staffAccessTokenSecret = ssm.StringParameter.valueForStringParameter(this, `/oripa-now/${deployEnv}/staff-access-token-secret`);
+
     // DynamoDB: batch-stack が作成した oripa-posts / giveaway-posts テーブル（読み取り専用）
     const oripaPostsTableName = `${deployEnv}-oripa-posts`;
     const giveawayPostsTableName = `${deployEnv}-giveaway-posts`;
@@ -68,6 +74,10 @@ export class WebStack extends cdk.Stack {
         PORT: '3000',
         ORIPA_POSTS_TABLE_NAME: oripaPostsTableName,
         GIVEAWAY_POSTS_TABLE_NAME: giveawayPostsTableName,
+        X_STAFF_API_KEY: staffApiKey,
+        X_STAFF_API_SECRET: staffApiSecret,
+        X_STAFF_ACCESS_TOKEN: staffAccessToken,
+        X_STAFF_ACCESS_TOKEN_SECRET: staffAccessTokenSecret,
       },
     });
 
@@ -95,11 +105,20 @@ export class WebStack extends cdk.Stack {
         'dynamodb:Scan',
         'dynamodb:Query',
         'dynamodb:DescribeTable',
+        'dynamodb:PutItem',
+        'dynamodb:UpdateItem',
       ],
       resources: [
         oripaPostsTableArn, `${oripaPostsTableArn}/index/*`,
         storesTableArn, `${storesTableArn}/index/*`,
         giveawayPostsTableArn, `${giveawayPostsTableArn}/index/*`,
+      ],
+    }));
+
+    nextjsFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['ssm:GetParameter'],
+      resources: [
+        `arn:aws:ssm:${this.region}:${this.account}:parameter/oripa-now/${deployEnv}/staff-*`,
       ],
     }));
 
