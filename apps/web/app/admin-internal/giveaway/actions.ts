@@ -70,21 +70,31 @@ async function getTwitterClient(): Promise<TwitterApi> {
   });
 }
 
-async function makeSessionToken(): Promise<string> {
-  const secret = process.env.ADMIN_PASS ?? "fallback";
+async function signToken(secret: string, payload: string): Promise<string> {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"],
   );
-  const sig = await crypto.subtle.sign("HMAC", key, enc.encode("admin-authenticated"));
+  const sig = await crypto.subtle.sign("HMAC", key, enc.encode(payload));
   return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function verifySessionToken(token: string): Promise<boolean> {
+  const secret = process.env.ADMIN_PASS;
+  if (!secret) return false;
+  const dot = token.indexOf(".");
+  if (dot === -1) return false;
+  const expMs = Number(token.slice(0, dot));
+  if (!Number.isFinite(expMs) || expMs < Date.now()) return false;
+  const hmac = await signToken(secret, String(expMs));
+  return token.slice(dot + 1) === hmac;
 }
 
 /** Re-verify admin auth inside the action via HMAC session cookie. */
 async function assertAdmin(): Promise<void> {
   const jar = await cookies();
   const cookie = jar.get("admin_session")?.value;
-  if (cookie && cookie === await makeSessionToken()) return;
+  if (cookie && await verifySessionToken(cookie)) return;
 
   // Fallback for local dev without cookie (e.g. first request before cookie is set)
   const h = await headers();

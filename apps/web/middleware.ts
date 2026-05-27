@@ -3,21 +3,40 @@ import { NextRequest, NextResponse } from 'next/server';
 const BLOCKED_PATHS = ['/admin', '/dashboard', '/manager', '/admin-internal'];
 const COOKIE_NAME = 'admin_session';
 
-// Edge-compatible HMAC using Web Crypto API
-async function makeSessionToken(): Promise<string> {
-  const secret = process.env.ADMIN_PASS ?? 'fallback';
+const SESSION_TTL_MS = 8 * 60 * 60 * 1000; // 8h, matches maxAge below
+
+async function signToken(secret: string, payload: string): Promise<string> {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey(
     'raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
   );
-  const sig = await crypto.subtle.sign('HMAC', key, enc.encode('admin-authenticated'));
+  const sig = await crypto.subtle.sign('HMAC', key, enc.encode(payload));
   return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function makeSessionToken(): Promise<string> {
+  const secret = process.env.ADMIN_PASS;
+  if (!secret) throw new Error('ADMIN_PASS not set');
+  const expMs = Date.now() + SESSION_TTL_MS;
+  const hmac = await signToken(secret, String(expMs));
+  return `${expMs}.${hmac}`;
+}
+
+async function verifySessionToken(token: string): Promise<boolean> {
+  const secret = process.env.ADMIN_PASS;
+  if (!secret) return false;
+  const dot = token.indexOf('.');
+  if (dot === -1) return false;
+  const expMs = Number(token.slice(0, dot));
+  if (!Number.isFinite(expMs) || expMs < Date.now()) return false;
+  const hmac = await signToken(secret, String(expMs));
+  return token.slice(dot + 1) === hmac;
 }
 
 async function hasValidSessionCookie(request: NextRequest): Promise<boolean> {
   const cookie = request.cookies.get(COOKIE_NAME)?.value;
   if (!cookie) return false;
-  return cookie === await makeSessionToken();
+  return verifySessionToken(cookie);
 }
 
 async function setSessionCookie(response: NextResponse): Promise<void> {
