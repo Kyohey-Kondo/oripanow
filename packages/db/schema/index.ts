@@ -5,8 +5,6 @@ export const TABLE_NAMES = {
   stores: process.env.STORES_TABLE_NAME ?? `${DEPLOY_ENV}-stores`,
   oripaPosts: process.env.ORIPA_POSTS_TABLE_NAME ?? `${DEPLOY_ENV}-oripa-posts`,
   tweets: process.env.TWEETS_TABLE_NAME ?? `${DEPLOY_ENV}-tweets`,
-  giveawayTweets: process.env.GIVEAWAY_TWEETS_TABLE_NAME ?? `${DEPLOY_ENV}-giveaway-tweets`,
-  giveawayPosts: process.env.GIVEAWAY_POSTS_TABLE_NAME ?? `${DEPLOY_ENV}-giveaway-posts`,
 } as const;
 
 // ─── GSI names ────────────────────────────────────────────────────────────────
@@ -19,10 +17,6 @@ export const GSI = {
   tweetsByStore: "GSI1",
   /** GSI2 on tweets: processStatus → fetchedAt (sparse, batch queue) */
   unprocessedTweets: "GSI2",
-  /** GSI1 on giveaway-posts: statusDeadline → createdAt */
-  giveawayPostsByStatusDeadline: "GSI1",
-  /** GSI2 on giveaway-tweets: processStatus → fetchedAt (sparse, batch queue) */
-  unprocessedGiveawayTweets: "GSI2",
 } as const;
 
 // ─── Item types ───────────────────────────────────────────────────────────────
@@ -70,60 +64,4 @@ export type TweetItem = {
   fetchedAt: string;        // ISO 8601
   // GSI2 sparse attribute — present only when not yet processed
   processStatus?: "UNPROCESSED";
-};
-
-// ─── Giveaway types ───────────────────────────────────────────────────────────
-
-export type AdminActions = {
-  followed?: boolean;
-  reposted?: boolean;
-  replied?: boolean;
-  done?: boolean;        // 対応済み — manually marked as handled
-};
-
-export type EntryConditions = {
-  follow: boolean;
-  repost: boolean;
-  reply: boolean;
-  other: boolean;
-  note?: string;
-};
-
-export type GiveawayPrize = {
-  type: "box" | "single" | "other";
-  name: string;
-  count?: number;           // Number of winners, if stated
-};
-
-export type GiveawayTweetItem = {
-  tweetId: string;          // Twitter's tweet ID — PK of ${env}-giveaway-tweets
-  sourceType: "store" | "search";
-  storeId?: string;         // ULID — set when sourceType="store"
-  twitterUsername: string;
-  content: string;
-  tweetedAt: string;        // ISO 8601
-  fetchedAt: string;        // ISO 8601
-  isProcessed: boolean;
-  // GSI2 sparse attribute — present only when not yet processed
-  processStatus?: "UNPROCESSED";
-};
-
-export type GiveawayPostItem = {
-  postId: string;           // Twitter tweet ID — PK of ${env}-giveaway-posts
-  tweetId: string;
-  sourceType: "store" | "search";
-  storeId?: string;
-  storeName?: string;       // Denormalized from stores
-  twitterUsername: string;
-  status: "active" | "ended" | "upcoming";
-  prizes: GiveawayPrize[];
-  entryConditions?: EntryConditions;
-  adminActions?: AdminActions;
-  deadline?: string;        // YYYY-MM-DD; absent if not parseable from tweet
-  rawText: string;
-  createdAt: string;        // ISO 8601
-  updatedAt: string;        // ISO 8601
-  // GSI1 attribute: "{status}#{deadline}" e.g. "active#2026-06-01"
-  // Unknown deadline uses sentinel "active#9999-12-31"
-  statusDeadline: string;
 };

@@ -25,12 +25,8 @@ Auto-generated from all feature plans. Last updated: 2026-05-27
 - TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router, Server Components), CSS Modules (019-card-sort-filter)
 - No changes — existing DynamoDB queries unchanged (019-card-sort-filter)
 - N/A — no schema changes (020-region-filter-tabs)
-- TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x + Next.js 15 (App Router, `force-dynamic`) + `@aws-sdk/lib-dynamodb`, `@aws-sdk/client-bedrock-runtime`, `twitter-api-v2`, `@oripa-now/db`, `@oripa-now/types`, AWS CDK v2 (022-pokeca-giveaway-page)
-- DynamoDB — two new tables: `{env}-giveaway-tweets` (raw), `{env}-giveaway-posts` (analyzed) (022-pokeca-giveaway-page)
 - TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router) + Next.js 15 middleware API (`NextResponse`, `NextRequest`), `@aws-sdk/lib-dynamodb`, `@oripa-now/db` (023-admin-page-auth)
 - DynamoDB — reads from existing `stores` and `oripa-posts` tables (no schema changes) (023-admin-page-auth)
-- TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router), AWS SDK v3 Bedrock Runtime, CSS Modules (024-giveaway-entry-badges)
-- DynamoDB `{env}-giveaway-posts` (no schema change — `entryConditions` replaces `conditions` as a plain attribute) (024-giveaway-entry-badges)
 
 ## Project Structure
 
@@ -75,6 +71,13 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 - **Always verify UI changes with Playwright before deploying.** Take a screenshot and confirm the layout looks correct.
 - **Save all screenshots and Playwright artifacts to `.e2e/`** (gitignored). Do not save them to the repo root.
 
+## Deploy Rules
+
+- **After every CDK deploy, run a CloudFront invalidation.** Distribution ID: `E2IKL3B19U8QKI`
+  ```bash
+  aws cloudfront create-invalidation --distribution-id E2IKL3B19U8QKI --paths "/*"
+  ```
+
 ## Pages (apps/web/app)
 
 | URL | ファイル | 概要 |
@@ -83,7 +86,6 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 | `/oripa` | `(public)/oripa/page.tsx` | **メインページ**。本日発売中オリパ一覧。エリア/リージョンタブ、ソート・フィルター、ページネーション付き |
 | `/oripa/shops/[storeId]` | `(public)/oripa/shops/[storeId]/page.tsx` | 店舗別オリパ投稿一覧（最新 60 件、ページネーション付き） |
 | `/shops/[storeId]` | `(public)/shops/[storeId]/page.tsx` | `/oripa/shops/[storeId]` へリダイレクト（旧URL互換） |
-| `/giveaway` | `(public)/giveaway/page.tsx` | ポケカプレゼント企画まとめ。ソート・フィルター付き |
 | `/invitation` | `(public)/invitation/page.tsx` | 各オリパサイトの招待コード一覧 |
 | `/privacy-policy` | `(public)/privacy-policy/page.tsx` | プライバシーポリシー（`robots: noindex`） |
 | `/admin-internal` | `admin-internal/page.tsx` | 管理者ダッシュボード（Basic Auth + CloudFront Function で保護） |
@@ -99,6 +101,5 @@ TypeScript 5.x strict モード。`packages/config/tsconfig.base.json` を全ワ
 <!-- MANUAL ADDITIONS END -->
 
 ## Recent Changes
-- 024-giveaway-entry-badges: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router), AWS SDK v3 Bedrock Runtime, CSS Modules
+- Removed the giveaway feature entirely (was 022-pokeca-giveaway-page, 024-giveaway-entry-badges): `/giveaway` page, admin giveaway tooling, fetch/analyze batch Lambdas, and `{env}-giveaway-tweets`/`{env}-giveaway-posts` DynamoDB tables — decommissioned to cut Twitter API usage.
 - 023-admin-page-auth: Added TypeScript 5.x / Node.js 22 LTS + Next.js 15 (App Router) + Next.js 15 middleware API (`NextResponse`, `NextRequest`), `@aws-sdk/lib-dynamodb`, `@oripa-now/db`
-- 022-pokeca-giveaway-page: Added TypeScript 5.x / Node.js 22 LTS / Lambda Node.js 22.x + Next.js 15 (App Router, `force-dynamic`) + `@aws-sdk/lib-dynamodb`, `@aws-sdk/client-bedrock-runtime`, `twitter-api-v2`, `@oripa-now/db`, `@oripa-now/types`, AWS CDK v2

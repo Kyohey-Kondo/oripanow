@@ -27,9 +27,8 @@ export class WebStack extends cdk.Stack {
     const { deployEnv, domainName, certificateArn } = props;
 
 
-    // DynamoDB: batch-stack が作成した oripa-posts / giveaway-posts テーブル（読み取り専用）
+    // DynamoDB: batch-stack が作成した oripa-posts テーブル（読み取り専用）
     const oripaPostsTableName = `${deployEnv}-oripa-posts`;
-    const giveawayPostsTableName = `${deployEnv}-giveaway-posts`;
 
     // CloudFront Function needs literal strings at synth time — read from env, not SSM lookup (which would cache in cdk.context.json).
     const adminPassForCfFn = process.env.ADMIN_PASS ?? '';
@@ -75,7 +74,6 @@ export class WebStack extends cdk.Stack {
         AWS_LWA_PORT: '3000',
         PORT: '3000',
         ORIPA_POSTS_TABLE_NAME: oripaPostsTableName,
-        GIVEAWAY_POSTS_TABLE_NAME: giveawayPostsTableName,
         DEPLOY_ENV: deployEnv,
         NEXT_PUBLIC_ADSENSE_PUBLISHER_ID: 'ca-pub-9551401698199717',
         ADMIN_PASS: adminPassForLambda,
@@ -94,11 +92,6 @@ export class WebStack extends cdk.Stack {
       resource: 'table',
       resourceName: storesTableName,
     });
-    const giveawayPostsTableArn = cdk.Stack.of(this).formatArn({
-      service: 'dynamodb',
-      resource: 'table',
-      resourceName: giveawayPostsTableName,
-    });
     nextjsFn.addToRolePolicy(new iam.PolicyStatement({
       actions: [
         'dynamodb:GetItem',
@@ -112,14 +105,6 @@ export class WebStack extends cdk.Stack {
       resources: [
         oripaPostsTableArn, `${oripaPostsTableArn}/index/*`,
         storesTableArn, `${storesTableArn}/index/*`,
-        giveawayPostsTableArn, `${giveawayPostsTableArn}/index/*`,
-      ],
-    }));
-
-    nextjsFn.addToRolePolicy(new iam.PolicyStatement({
-      actions: ['ssm:GetParameter', 'ssm:GetParameters'],
-      resources: [
-        `arn:aws:ssm:${this.region}:${this.account}:parameter/oripa-now/${deployEnv}/staff-*`,
       ],
     }));
     // KMS Decrypt needed for SSM SecureString parameters

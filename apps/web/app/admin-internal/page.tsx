@@ -1,5 +1,4 @@
 import { fetchAdminStats } from "@/lib/admin";
-import { headers } from "next/headers";
 import styles from "./admin-internal.module.css";
 
 export const dynamic = "force-dynamic";
@@ -13,16 +12,11 @@ const AREA_LABELS: Record<string, string> = {
 };
 
 export default async function AdminPage() {
-  const [stats, h] = await Promise.all([fetchAdminStats(), headers()]);
-  const pathHash = h.get("x-admin-path-hash") ?? "";
-  const adminBase = pathHash ? `/${pathHash}` : "/admin-internal";
+  const stats = await fetchAdminStats();
 
   return (
     <div className={styles.container}>
       <h1 className={styles.heading}>Admin Dashboard</h1>
-      <nav className={styles.nav}>
-        <a href={`${adminBase}/giveaway`} className={styles.navLink}>Giveaway 対応管理 →</a>
-      </nav>
       <p className={styles.meta}>取得時刻: {new Date(stats.fetchedAt).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}</p>
 
       <div className={styles.section}>
