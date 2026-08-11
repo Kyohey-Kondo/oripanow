@@ -17,6 +17,22 @@ function buildQuery(username: string): string {
   return `from:${username} (${oripaClause}) (${gameClause}) -is:retweet`;
 }
 
+const TWITTER_EPOCH_MS = 1288834974657n;
+const SEARCH_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+// Leave a safety margin below the API's 7-day cutoff for clock drift / request latency.
+const SINCE_ID_MAX_AGE_MS = SEARCH_WINDOW_MS - 60 * 60 * 1000;
+
+/**
+ * The recent-search endpoint rejects `since_id` once the referenced tweet
+ * falls outside its 7-day window. A prolonged upstream outage can leave a
+ * store's stored `since_id` stale forever (since it's only updated on a
+ * successful fetch), so treat an out-of-window since_id as absent.
+ */
+function isSinceIdWithinSearchWindow(sinceId: string): boolean {
+  const tweetTimestampMs = Number(BigInt(sinceId) >> 22n) + Number(TWITTER_EPOCH_MS);
+  return Date.now() - tweetTimestampMs < SINCE_ID_MAX_AGE_MS;
+}
+
 /**
  * Fetch recent tweets from a store's Twitter account that match oripa keywords.
  * Uses since_id (lastFetchedTweetId) when available to avoid re-fetching known tweets.
@@ -33,7 +49,7 @@ export async function fetchTweetsForStore(
     'tweet.fields': ['created_at', 'author_id', 'id'],
   };
 
-  if (sinceId) {
+  if (sinceId && isSinceIdWithinSearchWindow(sinceId)) {
     // since_id and start_time cannot be used together (Twitter API returns 400)
     params.since_id = sinceId;
   } else {
