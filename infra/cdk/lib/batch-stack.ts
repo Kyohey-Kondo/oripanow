@@ -302,10 +302,12 @@ export class BatchStack extends cdk.Stack {
     giveawayTweetsTable.grantReadWriteData(fetchGiveawayFn);
 
     // EventBridge: 10:00 JST (01:00 UTC)
+    // Disabled: giveaway feature is being decommissioned (Twitter API cost reduction).
     new events.Rule(this, 'FetchGiveawayScheduleRule', {
       ruleName: `${deployEnv}-oripa-now-fetch-giveaway`,
       schedule: events.Schedule.cron({ hour: '1', minute: '0' }),
       targets: [new eventsTargets.LambdaFunction(fetchGiveawayFn)],
+      enabled: false,
     });
 
     // ─── Lambda: analyze-giveaway ────────────────────────────────────────────
@@ -358,10 +360,12 @@ export class BatchStack extends cdk.Stack {
     }
 
     // EventBridge: 10:10 JST (01:10 UTC)
+    // Disabled: giveaway feature is being decommissioned (Twitter API cost reduction).
     new events.Rule(this, 'AnalyzeGiveawayScheduleRule', {
       ruleName: `${deployEnv}-oripa-now-analyze-giveaway`,
       schedule: events.Schedule.cron({ hour: '1', minute: '10' }),
       targets: [new eventsTargets.LambdaFunction(analyzeGiveawayFn)],
+      enabled: false,
     });
 
     // ─── Outputs ─────────────────────────────────────────────────────────────
