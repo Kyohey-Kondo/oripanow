@@ -127,21 +127,44 @@ export async function markTweetProcessed(
 }
 
 /**
- * Update the store's lastFetchedTweetId to enable since_id on the next run.
- * Uses the highest (numerically largest) tweet ID from the fetched set.
+ * Update the store's lastFetchedTweetId (for since_id on the next run) and
+ * lastTweetAt (the tweetedAt of the most recent keyword-matched tweet seen).
  */
 export async function updateLastFetchedTweetId(
   docClient: DynamoDBDocumentClient,
   storeId: string,
   tweetId: string,
+  lastTweetAt: string,
 ): Promise<void> {
   await docClient.send(
     new UpdateCommand({
       TableName: TABLE_NAMES.stores,
       Key: { storeId },
-      UpdateExpression: 'SET lastFetchedTweetId = :tweetId, updatedAt = :updatedAt',
+      UpdateExpression: 'SET lastFetchedTweetId = :tweetId, lastTweetAt = :lastTweetAt, updatedAt = :updatedAt',
       ExpressionAttributeValues: {
         ':tweetId': tweetId,
+        ':lastTweetAt': lastTweetAt,
+        ':updatedAt': new Date().toISOString(),
+      },
+    }),
+  );
+}
+
+/**
+ * Update the store's lastOripaPostAt after AI analysis confirms a tweet is an oripa post.
+ */
+export async function updateStoreLastOripaPostAt(
+  docClient: DynamoDBDocumentClient,
+  storeId: string,
+  lastOripaPostAt: string,
+): Promise<void> {
+  await docClient.send(
+    new UpdateCommand({
+      TableName: TABLE_NAMES.stores,
+      Key: { storeId },
+      UpdateExpression: 'SET lastOripaPostAt = :lastOripaPostAt, updatedAt = :updatedAt',
+      ExpressionAttributeValues: {
+        ':lastOripaPostAt': lastOripaPostAt,
         ':updatedAt': new Date().toISOString(),
       },
     }),

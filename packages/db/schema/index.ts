@@ -33,6 +33,8 @@ export type StoreItem = {
   createdAt: string;        // ISO 8601
   updatedAt: string;        // ISO 8601
   lastFetchedTweetId?: string; // Highest tweet ID seen on last successful fetch; used as since_id
+  lastTweetAt?: string;      // ISO 8601 — tweetedAt of the most recent keyword-matched tweet seen
+  lastOripaPostAt?: string;  // ISO 8601 — when the most recent tweet was AI-confirmed as an oripa post
 };
 
 export type OripaPostItem = {

@@ -74,6 +74,7 @@ export class WebStack extends cdk.Stack {
         AWS_LWA_PORT: '3000',
         PORT: '3000',
         ORIPA_POSTS_TABLE_NAME: oripaPostsTableName,
+        BATCH_FUNCTION_NAME: `${deployEnv}-oripa-now-batch`,
         DEPLOY_ENV: deployEnv,
         NEXT_PUBLIC_ADSENSE_PUBLISHER_ID: 'ca-pub-9551401698199717',
         ADMIN_PASS: adminPassForLambda,
@@ -114,6 +115,20 @@ export class WebStack extends cdk.Stack {
       conditions: {
         StringEquals: { 'kms:ViaService': `ssm.${this.region}.amazonaws.com` },
       },
+    }));
+
+    // IAM: allow the admin page to trigger an on-demand tweet fetch (async invoke)
+    // on the batch Lambda defined in BatchStack. Referenced by naming convention
+    // (same pattern as the table names above) to avoid a hard cross-stack dependency.
+    const batchFunctionArn = cdk.Stack.of(this).formatArn({
+      service: 'lambda',
+      resource: 'function',
+      resourceName: `${deployEnv}-oripa-now-batch`,
+      arnFormat: cdk.ArnFormat.COLON_RESOURCE_NAME,
+    });
+    nextjsFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['lambda:InvokeFunction'],
+      resources: [batchFunctionArn],
     }));
 
     const fnUrl = nextjsFn.addFunctionUrl({

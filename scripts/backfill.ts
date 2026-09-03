@@ -221,7 +221,11 @@ async function main() {
         const highest = tweets
           .map((t) => t.id)
           .reduce((max, id) => (BigInt(id) > BigInt(max) ? id : max));
-        await updateLastFetchedTweetId(docClient, store.storeId, highest);
+        const latestTweetedAt = tweets
+          .map((t) => t.created_at)
+          .filter((d): d is string => Boolean(d))
+          .reduce((max, d) => (d > max ? d : max));
+        await updateLastFetchedTweetId(docClient, store.storeId, highest, latestTweetedAt);
         totalWritten += written;
         console.log(`${written} tweets saved`);
       } else {

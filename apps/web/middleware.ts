@@ -79,7 +79,9 @@ export async function middleware(request: NextRequest) {
     const segments = pathname.split('/').filter(Boolean);
     const pathHash = segments[0] ?? '';
     const subpath = '/' + segments.slice(1).join('/');
-    const response = NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = `/admin-internal${subpath}`;
+    const response = NextResponse.rewrite(rewriteUrl);
     response.headers.set('x-admin-path-hash', pathHash);
     if (!await hasValidSessionCookie(request)) await setSessionCookie(response);
     return response;
@@ -94,7 +96,9 @@ export async function middleware(request: NextRequest) {
       });
     }
     const subpath = pathname.slice(`/${hash}`.length) || '/';
-    const response = NextResponse.rewrite(new URL(`/admin-internal${subpath}`, request.url));
+    const rewriteUrl = request.nextUrl.clone();
+    rewriteUrl.pathname = `/admin-internal${subpath}`;
+    const response = NextResponse.rewrite(rewriteUrl);
     response.headers.set('x-admin-path-hash', hash);
     if (!await hasValidSessionCookie(request)) await setSessionCookie(response);
     return response;

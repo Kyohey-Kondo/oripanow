@@ -4,7 +4,7 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient, GetCommand, QueryCommand } from '@aws-sdk/lib-dynamodb';
 import { TABLE_NAMES, GSI, type StoreItem, type TweetItem } from '@oripa-now/db';
 import { analyzeTweet } from './parse';
-import { saveOripaPost, markTweetProcessed } from './save';
+import { saveOripaPost, markTweetProcessed, updateStoreLastOripaPostAt } from './save';
 
 export type AnalyzeRunResult = {
   runAt: string;
@@ -87,6 +87,7 @@ export const handler = async (_event: unknown): Promise<AnalyzeRunResult> => {
       } else {
         postsCreated += await saveOripaPost(docClient, result, tweet, store);
         await markTweetProcessed(docClient, tweet.tweetId);
+        await updateStoreLastOripaPostAt(docClient, store.storeId, tweet.tweetedAt);
       }
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err);
