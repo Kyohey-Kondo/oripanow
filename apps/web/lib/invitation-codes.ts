@@ -17,6 +17,11 @@ export type InvitationCodeEntry = {
 
 export const INVITATION_CODES: InvitationCodeEntry[] = [
   {
+    siteName: 'オリパワン',
+    siteUrl: 'https://oripaone.jp/',
+    invitationCode: 'LhSdoU',
+  },
+  {
     siteName: 'オリくじ',
     siteUrl: 'https://px.a8.net/svt/ejp?a8mat=4B1THW+4QVFEA+5I52+5YJRM',
     invitationCode: 'FJcj4I',
@@ -46,10 +51,5 @@ export const INVITATION_CODES: InvitationCodeEntry[] = [
     siteName: 'DOPA',
     siteUrl: 'https://dopa-game.jp/',
     invitationCode: 'Lo3d6ZAi',
-  },
-  {
-    siteName: 'オリパワン',
-    siteUrl: 'https://oripaone.jp/',
-    invitationCode: '',
   },
 ];

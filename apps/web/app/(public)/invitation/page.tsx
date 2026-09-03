@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Icon } from '@iconify/react';
 import { INVITATION_CODES } from '@/lib/invitation-codes';
 import { CopyButton } from '@/app/components/CopyButton';
+import { TrackedLink } from './TrackedLink';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
@@ -46,10 +47,12 @@ export default function InvitationPage() {
                 </div>
                 {entry.banner && (
                   <div className={styles.banner}>
-                    <a
+                    <TrackedLink
                       href={entry.banner.linkUrl}
                       target="_blank"
                       rel="nofollow noopener noreferrer"
+                      eventName="affiliate_ad_click"
+                      eventParams={{ link_url: entry.banner.linkUrl, location: 'invitation_banner', site_name: entry.siteName }}
                     >
                       <img
                         src={entry.banner.imageUrl}
@@ -58,7 +61,7 @@ export default function InvitationPage() {
                         alt={entry.siteName}
                         style={{ maxWidth: '100%', height: 'auto', display: 'block' }}
                       />
-                    </a>
+                    </TrackedLink>
                     <img
                       src={entry.banner.trackingPixelUrl}
                       width={1}
@@ -76,14 +79,16 @@ export default function InvitationPage() {
                   </div>
                 )}
                 {entry.siteUrl && (
-                  <a
+                  <TrackedLink
                     href={entry.siteUrl}
                     target="_blank"
                     rel="nofollow noopener noreferrer"
                     className={styles.siteLink}
+                    eventName="invitation_site_click"
+                    eventParams={{ site_name: entry.siteName, link_url: entry.siteUrl }}
                   >
                     サイトへ →
-                  </a>
+                  </TrackedLink>
                 )}
                 {entry.trackingPixelUrl && (
                   <img

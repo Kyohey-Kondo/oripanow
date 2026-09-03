@@ -63,7 +63,7 @@ export async function generateMetadata({
 
   const description = areaLabel
     ? `${areaLabel}のポケモンカードオリパ最新情報。あたりカード・ラストワン賞情報を毎時更新。`
-    : 'ポケモンカードのオリパ最新情報を毎時更新。あたりカード・ラストワン賞情報つき。秋葉原・池袋・新宿・大宮・川越のオリパ在庫をリアルタイムで確認できます。';
+    : 'ポケモンカードのオリパ最新情報を毎時更新。あたりカード・ラストワン賞情報つき。東京都内（秋葉原・池袋・新宿）と埼玉（川越・大宮）のオリパ在庫をリアルタイムで確認できます。';
 
   const pageLabel = areaLabel ?? regionLabel;
   if (pageLabel) {
@@ -140,7 +140,7 @@ export default async function OripaPage({
           <div className={styles.logoIcon}><Icon icon="mdi:cards-playing" width={20} height={20} /></div>
           <div>
             <div className={styles.logoText}>ORIPA NOW</div>
-            <div className={styles.logoSub}>オリパ最新情報</div>
+            <h1 className={styles.logoSub}>オリパ最新情報</h1>
           </div>
         </a>
         <div className={styles.liveBadge}>
@@ -156,6 +156,7 @@ export default async function OripaPage({
           href="https://px.a8.net/svt/ejp?a8mat=4B1THW+4QVFEA+5I52+5Z6WX"
           imgSrc="https://www25.a8.net/svt/bgt?aid=260425364287&wid=001&eno=01&mid=s00000025679001004000&mc=1"
           trackingSrc="https://www13.a8.net/0.gif?a8mat=4B1THW+4QVFEA+5I52+5Z6WX"
+          location="oripa_top_header"
         />
       </div>
 
@@ -278,10 +279,11 @@ export default async function OripaPage({
                       {i === 0 && (
                         <AdBanner
                           key="ad"
-                          href="https://px.a8.net/svt/ejp?a8mat=4B1THW+97114I+5G0Y+5Z6WX"
-                          imgSrc="https://www21.a8.net/svt/bgt?aid=260425364556&wid=001&eno=01&mid=s00000025405001004000&mc=1"
-                          trackingSrc="https://www13.a8.net/0.gif?a8mat=4B1THW+97114I+5G0Y+5Z6WX"
+                          href="https://px.a8.net/svt/ejp?a8mat=4BA398+14HHWY+5H3K+5YZ75"
+                          imgSrc="https://www26.a8.net/svt/bgt?aid=260811260068&wid=001&eno=01&mid=s00000025544001003000&mc=1"
+                          trackingSrc="https://www14.a8.net/0.gif?a8mat=4BA398+14HHWY+5H3K+5YZ75"
                           style={{ margin: '8px 0' }}
+                          location="oripa_top_sidebar"
                         />
                       )}
                     </React.Fragment>
