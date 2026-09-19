@@ -5,6 +5,7 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 
 import * as cdk from 'aws-cdk-lib';
 import { BatchStack } from '../lib/batch-stack';
+import { OnlineOripaStack } from '../lib/online-oripa-stack';
 import { WebStack } from '../lib/web-stack';
 
 const deployEnv = process.env.DEPLOY_ENV ?? 'dev';
@@ -24,6 +25,14 @@ const webStack = new WebStack(app, `${deployEnv}-web-stack`, {
 new BatchStack(app, `${deployEnv}-batch-stack`, {
   deployEnv,
   cloudFrontDistributionId: webStack.distribution.distributionId,
+  env: {
+    account: process.env.CDK_DEFAULT_ACCOUNT,
+    region: process.env.CDK_DEFAULT_REGION ?? 'ap-northeast-1',
+  },
+});
+
+new OnlineOripaStack(app, `${deployEnv}-online-oripa-stack`, {
+  deployEnv,
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION ?? 'ap-northeast-1',

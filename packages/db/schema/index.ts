@@ -5,6 +5,7 @@ export const TABLE_NAMES = {
   stores: process.env.STORES_TABLE_NAME ?? `${DEPLOY_ENV}-stores`,
   oripaPosts: process.env.ORIPA_POSTS_TABLE_NAME ?? `${DEPLOY_ENV}-oripa-posts`,
   tweets: process.env.TWEETS_TABLE_NAME ?? `${DEPLOY_ENV}-tweets`,
+  onlineOripaItems: process.env.ONLINE_ORIPA_ITEMS_TABLE_NAME ?? `${DEPLOY_ENV}-online-oripa-items`,
 } as const;
 
 // ─── GSI names ────────────────────────────────────────────────────────────────
@@ -17,6 +18,8 @@ export const GSI = {
   tweetsByStore: "GSI1",
   /** GSI2 on tweets: processStatus → fetchedAt (sparse, batch queue) */
   unprocessedTweets: "GSI2",
+  /** GSI1 on online-oripa-items: activeStatus → lastSeenAt (sparse — inactive items drop out) */
+  onlineOripaItemsByActiveStatus: "GSI1",
 } as const;
 
 // ─── Item types ───────────────────────────────────────────────────────────────
@@ -66,4 +69,18 @@ export type TweetItem = {
   fetchedAt: string;        // ISO 8601
   // GSI2 sparse attribute — present only when not yet processed
   processStatus?: "UNPROCESSED";
+};
+
+export type OnlineOripaItem = {
+  itemId: string;           // sha1(productUrl) hex — PK of ${env}-online-oripa-items
+  provider: string;         // e.g. "orikuji"
+  productUrl: string;
+  imageUrl: string;
+  status: "active" | "inactive";
+  missCount: number;        // consecutive scrape runs this item was not seen
+  firstSeenAt: string;      // ISO 8601
+  lastSeenAt: string;       // ISO 8601 — updated whenever the item is seen again
+  updatedAt: string;        // ISO 8601
+  // GSI1 sparse attribute — present only while status === "active"
+  activeStatus?: "ACTIVE";
 };
