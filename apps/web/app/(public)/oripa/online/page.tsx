@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { getActiveOnlineOripaItems } from '@/lib/online-oripa';
+import { A8LinkManager } from './A8LinkManager';
 import { OnlineOripaCard } from './OnlineOripaCard';
 import styles from './online.module.css';
 
@@ -41,16 +42,7 @@ export default async function OnlineOripaPage() {
         )}
       </main>
 
-      {/*
-        A8.net リンクマネージャー埋め込みタグ。
-        A8マイページで発行後、NEXT_PUBLIC_A8_LINK_MANAGER_SCRIPT にタグの中身(JS本文)を
-        設定してビルドし直すと有効化される。未設定の間はサムネイルは通常リンクとして機能する
-        (=クリックは正常に遷移するが、A8成果計測はされない)。
-      */}
-      {process.env.NEXT_PUBLIC_A8_LINK_MANAGER_SCRIPT && (
-        // eslint-disable-next-line react/no-danger
-        <script dangerouslySetInnerHTML={{ __html: process.env.NEXT_PUBLIC_A8_LINK_MANAGER_SCRIPT }} />
-      )}
+      <A8LinkManager />
     </div>
   );
 }
