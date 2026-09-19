@@ -74,6 +74,7 @@ export class WebStack extends cdk.Stack {
         AWS_LWA_PORT: '3000',
         PORT: '3000',
         ORIPA_POSTS_TABLE_NAME: oripaPostsTableName,
+        ONLINE_ORIPA_ITEMS_TABLE_NAME: `${deployEnv}-online-oripa-items`,
         BATCH_FUNCTION_NAME: `${deployEnv}-oripa-now-batch`,
         DEPLOY_ENV: deployEnv,
         NEXT_PUBLIC_ADSENSE_PUBLISHER_ID: 'ca-pub-9551401698199717',
@@ -93,6 +94,11 @@ export class WebStack extends cdk.Stack {
       resource: 'table',
       resourceName: storesTableName,
     });
+    const onlineOripaItemsTableArn = cdk.Stack.of(this).formatArn({
+      service: 'dynamodb',
+      resource: 'table',
+      resourceName: `${deployEnv}-online-oripa-items`,
+    });
     nextjsFn.addToRolePolicy(new iam.PolicyStatement({
       actions: [
         'dynamodb:GetItem',
@@ -106,6 +112,7 @@ export class WebStack extends cdk.Stack {
       resources: [
         oripaPostsTableArn, `${oripaPostsTableArn}/index/*`,
         storesTableArn, `${storesTableArn}/index/*`,
+        onlineOripaItemsTableArn, `${onlineOripaItemsTableArn}/index/*`,
       ],
     }));
     // KMS Decrypt needed for SSM SecureString parameters
