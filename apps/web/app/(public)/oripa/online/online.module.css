@@ -77,6 +77,43 @@
   margin: 0 auto;
 }
 
+.toolbarButtons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.tab {
+  flex-shrink: 0;
+  padding: 7px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tabActive {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0c14;
+  box-shadow: 0 0 16px rgba(245, 200, 66, 0.35);
+}
+
+.tabActive:hover {
+  color: #0a0c14;
+}
+
 .emptyState {
   color: var(--text-muted);
   padding: 32px 0;

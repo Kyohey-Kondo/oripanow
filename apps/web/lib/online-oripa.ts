@@ -2,13 +2,24 @@ import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocumentClient } from '@aws-sdk/lib-dynamodb';
 import { queryActiveOnlineOripaItems, TABLE_NAME } from '@oripa-now/db/queries/online-oripa-items';
 
-const PROVIDER_LABELS: Record<string, string> = {
-  orikuji: 'オリくじ',
-  dopa: 'DOPA',
-};
+export const PROVIDERS = [
+  { value: 'orikuji', label: 'オリくじ' },
+  { value: 'dopa', label: 'DOPA' },
+] as const;
+
+export type ProviderValue = (typeof PROVIDERS)[number]['value'];
+
+const PROVIDER_LABELS: Record<string, string> = Object.fromEntries(
+  PROVIDERS.map((p) => [p.value, p.label]),
+);
+
+export function isProviderValue(value: string): value is ProviderValue {
+  return PROVIDERS.some((p) => p.value === value);
+}
 
 export type OnlineOripaCardData = {
   itemId: string;
+  provider: string;
   productUrl: string;
   imageUrl: string;
   providerLabel: string;
@@ -41,6 +52,7 @@ export async function getActiveOnlineOripaItems(): Promise<OnlineOripaListing> {
     return {
       items: items.map((item) => ({
         itemId: item.itemId,
+        provider: item.provider,
         productUrl: item.productUrl,
         imageUrl: item.imageUrl,
         providerLabel: PROVIDER_LABELS[item.provider] ?? item.provider,

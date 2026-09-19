@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
-import { getActiveOnlineOripaItems } from '@/lib/online-oripa';
+import { getActiveOnlineOripaItems, isProviderValue } from '@/lib/online-oripa';
 import { A8LinkManager } from './A8LinkManager';
 import { OnlineOripaCard } from './OnlineOripaCard';
+import { ProviderFilterTabs } from './ProviderFilterTabs';
 import styles from './online.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -14,8 +15,20 @@ export const metadata: Metadata = {
   alternates: { canonical: `${BASE_URL}/oripa/online` },
 };
 
-export default async function OnlineOripaPage() {
+export default async function OnlineOripaPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ provider?: string }>;
+}) {
+  const { provider: providerParam } = await searchParams;
+  const currentProvider = providerParam && isProviderValue(providerParam) ? providerParam : undefined;
+
   const { items, lastUpdatedAt } = await getActiveOnlineOripaItems();
+  const filteredItems = currentProvider ? items.filter((item) => item.provider === currentProvider) : items;
+  const counts = items.reduce<Record<string, number>>((acc, item) => {
+    acc[item.provider] = (acc[item.provider] ?? 0) + 1;
+    return acc;
+  }, {});
 
   return (
     <div className={styles.page}>
@@ -43,11 +56,18 @@ export default async function OnlineOripaPage() {
       <p className={styles.promoDisclosure}>PR / このページには広告が含まれています。</p>
 
       <main className={styles.main}>
-        {items.length === 0 ? (
-          <p className={styles.emptyState}>現在販売中のオンラインオリパはありません。</p>
+        {items.length > 0 && (
+          <ProviderFilterTabs currentProvider={currentProvider} counts={counts} total={items.length} />
+        )}
+        {filteredItems.length === 0 ? (
+          <p className={styles.emptyState}>
+            {items.length === 0
+              ? '現在販売中のオンラインオリパはありません。'
+              : '該当するオンラインオリパはありません。'}
+          </p>
         ) : (
           <div className={styles.grid}>
-            {items.map((item) => (
+            {filteredItems.map((item) => (
               <OnlineOripaCard key={item.itemId} item={item} />
             ))}
           </div>
