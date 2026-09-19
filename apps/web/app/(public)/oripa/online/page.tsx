@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function OnlineOripaPage() {
-  const items = await getActiveOnlineOripaItems();
+  const { items, lastUpdatedAt } = await getActiveOnlineOripaItems();
 
   return (
     <div className={styles.page}>
@@ -27,6 +27,18 @@ export default async function OnlineOripaPage() {
             <h1 className={styles.logoSub}>オンラインオリパ</h1>
           </div>
         </a>
+        {lastUpdatedAt && (
+          <p className={styles.lastUpdated}>
+            最終更新:{' '}
+            {new Date(lastUpdatedAt).toLocaleString('ja-JP', {
+              timeZone: 'Asia/Tokyo',
+              month: 'numeric',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </p>
+        )}
       </header>
       <p className={styles.promoDisclosure}>PR / このページには広告が含まれています。</p>
 

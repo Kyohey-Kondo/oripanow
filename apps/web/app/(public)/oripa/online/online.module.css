@@ -13,9 +13,21 @@
 }
 
 .header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 12px;
   padding: 28px 24px 8px;
   border-bottom: 1px solid var(--border);
   background: linear-gradient(180deg, rgba(245, 200, 66, 0.04) 0%, transparent 100%);
+}
+
+.lastUpdated {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 
 .logo {
