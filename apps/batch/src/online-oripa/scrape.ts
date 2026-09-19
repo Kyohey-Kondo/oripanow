@@ -42,7 +42,9 @@ export async function scrapeOrikujiPokemonItems(page: Page): Promise<ScrapedItem
         const src = a.querySelector('img')?.getAttribute('src');
         if (!href || !src || seen.has(href)) continue;
         seen.add(href);
-        results.push({ productUrl: new URL(href, base).toString(), imageUrl: src });
+        // Some items (e.g. a "user limit reached" placeholder) use a relative
+        // image src instead of the usual absolute media.orikuji.com URL.
+        results.push({ productUrl: new URL(href, base).toString(), imageUrl: new URL(src, base).toString() });
       }
       return results;
     },
