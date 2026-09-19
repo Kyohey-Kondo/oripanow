@@ -17,13 +17,18 @@ const MAX_LOAD_MORE_CLICKS = 20;
 export async function scrapeOrikujiPokemonItems(page: Page): Promise<ScrapedItem[]> {
   const categoryUrl = `${BASE_URL}${CATEGORY_PATH}`;
   await page.goto(categoryUrl, { waitUntil: 'domcontentloaded' });
-  await page.waitForSelector(`a[href^="${CATEGORY_PATH}/"]`, { timeout: 15_000 });
+  // Generous margin: a reused Lambda execution environment can be noticeably
+  // slower to render this SPA than a fresh one (observed 15s as too tight).
+  await page.waitForSelector(`a[href^="${CATEGORY_PATH}/"]`, { timeout: 30_000 });
 
   const loadMoreButton = page.getByText('もっと見る', { exact: false }).first();
   for (let i = 0; i < MAX_LOAD_MORE_CLICKS; i++) {
     const isVisible = await loadMoreButton.isVisible().catch(() => false);
     if (!isVisible) break;
-    await loadMoreButton.click();
+    // A native DOM click (not Playwright's pointer-simulated click) — the
+    // feed's item cards can visually overlap the button as they lazy-load,
+    // which makes Playwright's actionability check time out.
+    await loadMoreButton.evaluate((el) => (el as HTMLElement).click());
     await page.waitForTimeout(800);
   }
 
