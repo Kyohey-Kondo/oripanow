@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { OnlineOripaItem } from '@oripa-now/db';
 import { findMissingItems, isAnomalousDrop, MAX_MISS_COUNT } from '../diff';
-import type { ScrapedItem } from '../scrape';
+import type { ScrapedItem } from '../types';
 
 function makeItem(overrides: Partial<OnlineOripaItem> = {}): OnlineOripaItem {
   return {

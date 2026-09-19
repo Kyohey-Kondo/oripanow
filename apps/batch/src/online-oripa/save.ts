@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { DynamoDBDocumentClient, UpdateCommand } from '@aws-sdk/lib-dynamodb';
 import { TABLE_NAMES, type OnlineOripaItem } from '@oripa-now/db';
 import { MAX_MISS_COUNT } from './diff';
-import type { ScrapedItem } from './scrape';
+import type { ScrapedItem } from './types';
 
 /** Stable item id derived from productUrl, so re-scraping the same product upserts the same row. */
 export function deriveItemId(productUrl: string): string {

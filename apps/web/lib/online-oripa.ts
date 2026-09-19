@@ -4,6 +4,7 @@ import { queryActiveOnlineOripaItems, TABLE_NAME } from '@oripa-now/db/queries/o
 
 const PROVIDER_LABELS: Record<string, string> = {
   orikuji: 'オリくじ',
+  dopa: 'DOPA',
 };
 
 export type OnlineOripaCardData = {

@@ -1,9 +1,5 @@
 import type { Page } from 'playwright-core';
-
-export type ScrapedItem = {
-  productUrl: string;
-  imageUrl: string;
-};
+import type { ScrapedItem } from './types';
 
 const BASE_URL = 'https://orikuji.com';
 const CATEGORY_PATH = '/gacha/pokemon';

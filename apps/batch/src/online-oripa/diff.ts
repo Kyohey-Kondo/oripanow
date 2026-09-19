@@ -1,5 +1,5 @@
 import type { OnlineOripaItem } from '@oripa-now/db';
-import type { ScrapedItem } from './scrape';
+import type { ScrapedItem } from './types';
 
 export const MAX_MISS_COUNT = 3;
 export const ANOMALY_DROP_RATIO = 0.5;
