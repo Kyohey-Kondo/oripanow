@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { Icon } from '@iconify/react';
 import { INVITATION_CODES } from '@/lib/invitation-codes';
 import { CopyButton } from '@/app/components/CopyButton';
-import { TrackedLink } from './TrackedLink';
+import { TrackedLink } from '@/app/components/TrackedLink';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {

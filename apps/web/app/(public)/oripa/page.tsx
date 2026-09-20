@@ -13,6 +13,7 @@ import {
 import type { SortOption, FilterOption } from '@/lib/posts';
 import { tweetIdToDate } from '@/lib/tweet-utils';
 import { REGIONS, getAreasForRegion } from '@/lib/regions';
+import { OnlineOripaPromoBanner } from './components/OnlineOripaPromoBanner';
 import { OripaCard } from './components/OripaCard';
 import { SortFilterToolbar } from './components/SortFilterToolbar';
 import styles from './oripa.module.css';
@@ -162,6 +163,7 @@ export default async function OripaPage({
 
       {/* Main content */}
       <main className={styles.main}>
+        <OnlineOripaPromoBanner />
         <div className={styles.contentLayout}>
           <div className={styles.gridColumn}>
 
