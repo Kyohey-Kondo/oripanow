@@ -5,6 +5,8 @@ export function OnlineOripaPromoBanner() {
   return (
     <TrackedLink
       href="/oripa/online"
+      target="_blank"
+      rel="noopener"
       className={styles.onlineOripaPromo}
       eventName="internal_nav_click"
       eventParams={{ link_url: '/oripa/online', location: 'oripa_top_promo' }}
