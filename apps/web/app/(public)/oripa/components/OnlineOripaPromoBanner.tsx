@@ -1,11 +1,8 @@
-import { getActiveOnlineOripaItems } from '@/lib/online-oripa';
 import { TrackedLink } from '@/app/components/TrackedLink';
+import { OnlineOripaPromoThumbnail } from './OnlineOripaPromoThumbnail';
 import styles from '../oripa.module.css';
 
-export async function OnlineOripaPromoBanner() {
-  const { items } = await getActiveOnlineOripaItems();
-  const thumbnail = items.length > 0 ? items[Math.floor(Math.random() * items.length)] : null;
-
+export function OnlineOripaPromoBanner() {
   return (
     <TrackedLink
       href="/oripa/online"
@@ -15,12 +12,7 @@ export async function OnlineOripaPromoBanner() {
       eventName="internal_nav_click"
       eventParams={{ link_url: '/oripa/online', location: 'oripa_top_promo' }}
     >
-      {thumbnail ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={thumbnail.imageUrl} alt="" className={styles.onlineOripaPromoThumb} loading="lazy" />
-      ) : (
-        <span className={styles.onlineOripaPromoIcon}>🛒</span>
-      )}
+      <OnlineOripaPromoThumbnail />
       <span className={styles.onlineOripaPromoText}>
         <span className={styles.onlineOripaPromoTitleRow}>
           <span className={styles.onlineOripaPromoLive}>
