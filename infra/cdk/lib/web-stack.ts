@@ -189,7 +189,7 @@ function handler(event) {
       defaultTtl: cdk.Duration.hours(24),
       minTtl: cdk.Duration.hours(24),
       maxTtl: cdk.Duration.hours(24),
-      queryStringBehavior: cloudfront.CacheQueryStringBehavior.allowList('area', 'region', 'page', 'sort', 'filter'),
+      queryStringBehavior: cloudfront.CacheQueryStringBehavior.allowList('area', 'region', 'page', 'sort', 'filter', 'provider'),
       headerBehavior: cloudfront.CacheHeaderBehavior.allowList('RSC', 'Next-Router-State-Tree', 'Next-Router-Prefetch'),
       cookieBehavior: cloudfront.CacheCookieBehavior.none(),
       enableAcceptEncodingGzip: true,
