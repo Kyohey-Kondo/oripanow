@@ -11,8 +11,14 @@ export function OnlineOripaPromoBanner() {
     >
       <span className={styles.onlineOripaPromoIcon}>🛒</span>
       <span className={styles.onlineOripaPromoText}>
-        <span className={styles.onlineOripaPromoTitle}>オンラインオリパも配信中</span>
-        <span className={styles.onlineOripaPromoSub}>自宅から購入できるオリパをまとめてチェック</span>
+        <span className={styles.onlineOripaPromoTitleRow}>
+          <span className={styles.onlineOripaPromoLive}>
+            <span className={styles.liveDot} />
+            LIVE
+          </span>
+          <span className={styles.onlineOripaPromoTitle}>今熱い！オンラインオリパの最新商品を掲載中</span>
+        </span>
+        <span className={styles.onlineOripaPromoSub}>自宅にいながら挑戦できるオリパをまとめてチェック</span>
       </span>
       <span className={styles.onlineOripaPromoArrow}>→</span>
     </TrackedLink>

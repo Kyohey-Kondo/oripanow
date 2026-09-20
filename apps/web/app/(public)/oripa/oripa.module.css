@@ -67,6 +67,28 @@
   min-width: 0;
 }
 
+.onlineOripaPromoTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.onlineOripaPromoLive {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  background: rgba(229, 62, 62, 0.12);
+  border: 1px solid rgba(229, 62, 62, 0.3);
+  border-radius: 100px;
+  padding: 2px 9px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #f97316;
+  letter-spacing: 0.08em;
+}
+
 .onlineOripaPromoTitle {
   font-size: 14px;
   font-weight: 800;
