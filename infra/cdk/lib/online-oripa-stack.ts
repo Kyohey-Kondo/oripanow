@@ -116,6 +116,40 @@ export class OnlineOripaStack extends cdk.Stack {
       targets: [new eventsTargets.LambdaFunction(dopaScraperFn)],
     });
 
+    // ─── Lambda: エクストレカ scraper (public JSON API — plain fetch, no browser) ──
+    const extorecaScraperLogGroup = new logs.LogGroup(this, 'ExtorecaScraperLogGroup', {
+      logGroupName: `/aws/lambda/${deployEnv}-online-oripa-extoreca-scraper`,
+      retention: logs.RetentionDays.ONE_WEEK,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    const extorecaScraperFn = new lambdaNodejs.NodejsFunction(this, 'ExtorecaScraperFunction', {
+      functionName: `${deployEnv}-online-oripa-extoreca-scraper`,
+      entry: path.join(__dirname, '../../../apps/batch/src/online-oripa/index-extoreca.ts'),
+      handler: 'handler',
+      runtime: lambda.Runtime.NODEJS_22_X,
+      memorySize: 256,
+      timeout: cdk.Duration.seconds(30),
+      environment: {
+        DEPLOY_ENV: deployEnv,
+        ONLINE_ORIPA_ITEMS_TABLE_NAME: itemsTable.tableName,
+      },
+      logGroup: extorecaScraperLogGroup,
+      bundling: {
+        minify: true,
+        sourceMap: false,
+        externalModules: [],
+      },
+    });
+
+    itemsTable.grantReadWriteData(extorecaScraperFn);
+
+    new events.Rule(this, 'ExtorecaScraperScheduleRule', {
+      ruleName: `${deployEnv}-online-oripa-extoreca-scraper`,
+      schedule: events.Schedule.rate(cdk.Duration.minutes(scrapeIntervalMinutes)),
+      targets: [new eventsTargets.LambdaFunction(extorecaScraperFn)],
+    });
+
     // ─── Outputs ─────────────────────────────────────────────────────────────
     new cdk.CfnOutput(this, 'ScraperFunctionName', {
       value: scraperFn.functionName,
@@ -125,6 +159,11 @@ export class OnlineOripaStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'DopaScraperFunctionName', {
       value: dopaScraperFn.functionName,
       description: 'Lambda function name for the DOPA scraper',
+    });
+
+    new cdk.CfnOutput(this, 'ExtorecaScraperFunctionName', {
+      value: extorecaScraperFn.functionName,
+      description: 'Lambda function name for the エクストレカ scraper',
     });
 
     new cdk.CfnOutput(this, 'OnlineOripaItemsTableName', {

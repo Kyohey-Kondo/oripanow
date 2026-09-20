@@ -5,6 +5,7 @@ import { queryActiveOnlineOripaItems, TABLE_NAME } from '@oripa-now/db/queries/o
 export const PROVIDERS = [
   { value: 'orikuji', label: 'オリくじ' },
   { value: 'dopa', label: 'DOPA' },
+  { value: 'extoreca', label: 'エクストレカ' },
 ] as const;
 
 export type ProviderValue = (typeof PROVIDERS)[number]['value'];
