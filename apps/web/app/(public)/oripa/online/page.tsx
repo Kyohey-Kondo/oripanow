@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Icon } from '@iconify/react';
 import { getActiveOnlineOripaItems, isProviderValue } from '@/lib/online-oripa';
 import { A8LinkManager } from './A8LinkManager';
 import { OnlineOripaCard } from './OnlineOripaCard';
@@ -40,18 +41,24 @@ export default async function OnlineOripaPage({
             <h1 className={styles.logoSub}>オンラインオリパ</h1>
           </div>
         </a>
-        {lastUpdatedAt && (
-          <p className={styles.lastUpdated}>
-            最終更新:{' '}
-            {new Date(lastUpdatedAt).toLocaleString('ja-JP', {
-              timeZone: 'Asia/Tokyo',
-              month: 'numeric',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </p>
-        )}
+        <div className={styles.headerRight}>
+          <a href="/oripa" className={styles.backLink}>
+            <Icon icon="heroicons:arrow-left" width={14} height={14} />
+            トップへ戻る
+          </a>
+          {lastUpdatedAt && (
+            <p className={styles.lastUpdated}>
+              最終更新:{' '}
+              {new Date(lastUpdatedAt).toLocaleString('ja-JP', {
+                timeZone: 'Asia/Tokyo',
+                month: 'numeric',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </p>
+          )}
+        </div>
       </header>
       <p className={styles.promoDisclosure}>PR / このページには広告が含まれています。</p>
 
